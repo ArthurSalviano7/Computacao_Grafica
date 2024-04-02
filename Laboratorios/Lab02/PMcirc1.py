@@ -6,36 +6,38 @@ from OpenGL.GLU import *
 
 def draw_pixel(dc_x, dc_y):
     glBegin(GL_POINTS)
-    glColor3f(1.0, 0.0, 0.0)
+    glColor3f(0.0, 1.0, 0.0)
     glVertex2f(dc_x, dc_y) 
     glEnd()
 
-def DDA(x1, y1, x2, y2):
-    dx = x2 - x1
-    dy = y2 - y1
+def pontoCirculo(x, y):
+    draw_pixel(x, y)
+    draw_pixel(y, x)
+    draw_pixel(y, -x)
+    draw_pixel(x, -y)
+    draw_pixel(-x, -y)
+    draw_pixel(-y, -x)
+    draw_pixel(-y, x)
+    draw_pixel(-x, y)
 
-    length = max(abs(dx), abs(dy))
-
-    if length != 0:
-        x_increment = dx / length
-        y_increment = dy / length
-    else:
-        x_increment = 0
-        y_increment = 0
-
-    x = x1
-    y = y1
-
+def circPontoMedio(raio):
     points = []
+    x = 0
+    y = raio
+    d = round(5/4 - raio)
+
     points.append((round(x), round(y)))
-
-    draw_pixel(round(x), round(y))
-
-    while(x < x2):
-        x += x_increment
-        y += y_increment
+    pontoCirculo(round(x), round(y))
+    
+    while(y > x):
+        if(d < 0):
+            d += 2 * x + 3
+        else:
+            d += 2 * (x - y) + 5
+            y -= 1
+        x += 1
         points.append((round(x), round(y)))
-        draw_pixel(round(x), round(y))
+        pontoCirculo(round(x), round(y))
     
     return points
 
@@ -43,7 +45,6 @@ def printPontos(points):
     for element in points:
         print(element)
 
-    
 pg.init()
 info = pg.display.Info()
 height = info.current_h
@@ -52,15 +53,13 @@ display = (width, height)
 screen = pg.display.set_mode(display, DOUBLEBUF | OPENGL)
 
 def main():
-
     gluOrtho2D(-width/2, width/2, -height/2, height/2)
 
-    x1, y1 = 6, 9
-    x2, y2 = 12, 16
-
-    print("Pontos da reta:")
-
-    printPontos(DDA(x1, y1, x2, y2))
+    raio = 50
+    
+    print("Raio: " + str(raio))
+    print("Pontos 1º octante: ")
+    print(printPontos(circPontoMedio(raio)))
 
     while True:
         for event in pg.event.get():
@@ -68,7 +67,7 @@ def main():
                 pg.quit()
                 quit()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        DDA(x1, y1, x2, y2)
+        circPontoMedio(raio)
         pg.display.flip()
 
 if __name__ == "__main__":
