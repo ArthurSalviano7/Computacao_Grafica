@@ -96,7 +96,7 @@ def main():
     # Desenhar o quadrado após a translação
     draw_square(point1, point2, point3, point4)
 
-    pg.quit()
 
 if __name__ == "__main__":
-    main()
+    while(True):
+        main()

@@ -8,6 +8,8 @@ from OpenGL.GLU import *
 import numpy as np
 from pyopengltk import OpenGLFrame
 
+from Transformações import Rotacao
+from Transformações import Translacao
 from Transformações import Escala
 
 
@@ -64,7 +66,7 @@ class AppOgl(OpenGLFrame):
         yIncrement = dy / steps
         x = x0
         y = y0
-        self.draw_pixel(round(x), round(y))
+        #self.draw_pixel(round(x), round(y))
         for k in range(int(steps)):
             x += xIncrement
             y += yIncrement
@@ -106,8 +108,27 @@ class AppOgl(OpenGLFrame):
         self.points = [] 
 
         #Desenha o novo quadrado
-        self.draw_square(*self.square_points_list) #passa os parametros da função ao desempacotar a lista
+        self.draw_square(*self.square_points_list) #passa os parametros da função ao desempacotar a lista (p1, p2, etc.)
 
+    def translacao(self, tx, ty):
+        
+        self.square_points_list = Translacao.realizar_translacao(self.square_points_list, tx, ty)
+
+        #Remove o quadrado anterior
+        self.points = []
+
+        #Desenha o novo quadrado transladado
+        self.draw_square(*self.square_points_list)
+    
+    def rotacao(self, angle):
+        
+        self.square_points_list = Rotacao.realizar_rotacao(self.square_points_list, angle)
+
+        #Remove o quadrado anterior
+        self.points = []
+
+        #Desenha o novo quadrado rotacionado
+        self.draw_square(*self.square_points_list)
 
         
         
