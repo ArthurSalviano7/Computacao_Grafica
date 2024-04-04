@@ -5,14 +5,13 @@
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
-import numpy as np
 from pyopengltk import OpenGLFrame
 
 from Transformações import Rotacao
 from Transformações import Translacao
 from Transformações import Escala
-
-
+from Transformações import Cisalhamento
+from Transformações import Reflexao
 
 class AppOgl(OpenGLFrame):
     def initgl(self):
@@ -100,9 +99,9 @@ class AppOgl(OpenGLFrame):
 
 
     #Transformações no Quadrado
-    def escala(self, scale_factor):
+    def escala(self, sx, sy):
         #Passa os pontos do quadrado desenhado para a função de escala que retorna os novos pontos do quadrado
-        self.square_points_list = Escala.realizar_escala(self.square_points_list, scale_factor)
+        self.square_points_list = Escala.realizar_escala(self.square_points_list, sx, sy)
 
         #Remove o quadrado anterior
         self.points = [] 
@@ -129,6 +128,57 @@ class AppOgl(OpenGLFrame):
 
         #Desenha o novo quadrado rotacionado
         self.draw_square(*self.square_points_list)
+    
+    def cisalhamento(self, a, b):
+
+        self.square_points_list = Cisalhamento.realizar_cisalhamento(self.square_points_list, a, b)
+
+        #Remove o quadrado anterior
+        self.points = []
+
+        #Desenha o novo quadrado rotacionado
+        self.draw_square(*self.square_points_list)
+    
+    def reflexaoX(self):
+
+        self.square_points_list = Reflexao.realizar_reflexaoX(self.square_points_list)
+
+        #Remove o quadrado anterior
+        self.points = []
+
+        #Desenha o novo quadrado rotacionado
+        self.draw_square(*self.square_points_list)
+    
+    def reflexaoY(self):
+
+        self.square_points_list = Reflexao.realizar_reflexaoY(self.square_points_list)
+
+        #Remove o quadrado anterior
+        self.points = []
+
+        #Desenha o novo quadrado rotacionado
+        self.draw_square(*self.square_points_list)
+
+    def reflexaoOrigem(self):
+
+        self.square_points_list = Reflexao.realizar_reflexaoOrigem(self.square_points_list)
+
+        #Remove o quadrado anterior
+        self.points = []
+
+        #Desenha o novo quadrado rotacionado
+        self.draw_square(*self.square_points_list)
+
+    def reflexao45(self):
+
+        self.square_points_list = Reflexao.realizar_reflexao45(self.square_points_list)
+
+        #Remove o quadrado anterior
+        self.points = []
+
+        #Desenha o novo quadrado rotacionado
+        self.draw_square(*self.square_points_list)
+
 
         
         
