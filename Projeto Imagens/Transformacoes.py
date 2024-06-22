@@ -246,15 +246,99 @@ def rotacionar_imagem(imagem, angulo):
     
     return imagem_rotacionada
 
+
 def flip_horizontal(imagem):
+    altura_original, largura_original  = imagem.shape
+    
     # Converter imagem para matriz numpy
     img_array = np.array(imagem)
     
-    # Flip horizontal: equivale a uma rotação de 90º no sentido anti-horário da matriz transposta
-    img_flipped = np.flipud(img_array)  # Flip vertical
-    img_flipped = np.rot90(img_flipped, k=-1)  # Rotação de 90º no sentido anti-horário
+    # Criar matriz transposta
+    img_transposta = np.zeros((largura_original, altura_original), dtype=img_array.dtype)
+    
+    for y in range(altura_original):
+        for x in range(largura_original):
+            img_transposta[x, y] = img_array[y, x]
+    
+    # Criar matriz para a imagem rotacionada 90 graus no sentido anti-horário
+    img_rotacionada = np.zeros((altura_original, largura_original), dtype=img_array.dtype)
+    
+    for y in range(largura_original):
+        for x in range(altura_original):
+            img_rotacionada[altura_original - x - 1, y] = img_transposta[y, x]
     
     # Converter matriz de volta para imagem PIL
-    imagem_flipped = Image.fromarray(img_flipped)
+    imagem_flipada = Image.fromarray(img_rotacionada)
     
-    return imagem_flipped
+    return imagem_flipada
+
+def flip_vertical(imagem):
+    altura_original, largura_original  = imagem.shape
+    
+    # Converter imagem para matriz numpy
+    img_array = np.array(imagem)
+    
+    # Criar matriz transposta
+    img_transposta = np.zeros((largura_original, altura_original), dtype=img_array.dtype)
+    
+    for y in range(altura_original):
+        for x in range(largura_original):
+            img_transposta[x, y] = img_array[y, x]
+    
+    # Criar matriz para a imagem rotacionada 90 graus no sentido horário
+    img_rotacionada = np.zeros((altura_original, largura_original), dtype=img_array.dtype)
+    
+    for y in range(largura_original):
+        for x in range(altura_original):
+            img_rotacionada[x, largura_original - y - 1] = img_transposta[y, x]
+    
+    # Converter matriz de volta para imagem PIL
+    imagem_flipada = Image.fromarray(img_rotacionada)
+    
+    return imagem_flipada
+
+def warp_losango(imagem):
+    altura_original, largura_original  = imagem.shape
+    
+    # Converter imagem para matriz numpy
+    img_array = np.array(imagem)
+    
+    # Calcular a dimensão da nova imagem para garantir que caiba o losango
+    largura_nova = int(np.sqrt((largura_original**2 + altura_original**2) / 2) * 2)
+    altura_nova = largura_nova
+    img_warping = np.zeros((altura_nova, largura_nova), dtype=img_array.dtype)
+    
+    # Coeficientes para a transformação afim (definidos para criar um losango)
+    a, b, c = 1, 0.5, 0
+    d, e, f = 0.5, 1, 0
+    i, j = 0, 0
+    
+    # Centro da imagem original
+    centro_x = largura_original // 2
+    centro_y = altura_original // 2
+    
+    # Centro da nova imagem
+    centro_x_nova = largura_nova // 2
+    centro_y_nova = altura_nova // 2
+    
+    for y in range(altura_nova):
+        for x in range(largura_nova):
+            # Calcular as coordenadas originais usando a transformação inversa
+            denom = i * (x - centro_x_nova) + j * (y - centro_y_nova) + 1
+            if denom == 0:
+                continue
+            
+            x_original = (a * (x - centro_x_nova) + b * (y - centro_y_nova) + c) / denom
+            y_original = (d * (x - centro_x_nova) + e * (y - centro_y_nova) + f) / denom
+            
+            x_original = int(x_original + centro_x)
+            y_original = int(y_original + centro_y)
+            
+            # Verificar se as coordenadas originais estão dentro dos limites da imagem original
+            if 0 <= x_original < largura_original and 0 <= y_original < altura_original:
+                img_warping[y, x] = img_array[y_original, x_original]
+    
+    # Converter matriz de volta para imagem PIL
+    imagem_warping = Image.fromarray(img_warping)
+    
+    return imagem_warping

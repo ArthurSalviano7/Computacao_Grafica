@@ -7,6 +7,7 @@ import numpy as np
 import Filtros
 import Transformacoes
 import Equalizacao
+import Operacoes
 
 global entry_A, entry_Y
 
@@ -88,10 +89,12 @@ def aplicar_filtro(matriz):
         elif filtro_selecionado == "Rotacionar Imagem":
             ang = float(entry_A.get()) if entry_A.get() else 90
             imagem_filtrada = Transformacoes.rotacionar_imagem(imagem, -ang)
-        elif filtro_selecionado == "Reflexão em X":
+        elif filtro_selecionado == "Reflexão (flip horizontal)":
             imagem_filtrada = Transformacoes.flip_horizontal(imagem)
-        elif filtro_selecionado == "Reflexão em Y":
-            imagem_filtrada = Transformacoes.rotacionar_imagem(imagem, 90)
+        elif filtro_selecionado == "Reflexão (flip vertical)":
+            imagem_filtrada = Transformacoes.flip_vertical(imagem)
+        elif filtro_selecionado == "Warping":
+            imagem_filtrada = Transformacoes.warp_losango(imagem)
         else:
             imagem_filtrada = Filtros.aplicar_filtro_personalizado(imagem, matriz_convolucao)
         
@@ -203,13 +206,16 @@ def main():
 
     tab1 = tk.Frame(tab_control)
     tab2 = tk.Frame(tab_control)
+    tab3 = tk.Frame(tab_control)
 
     tab_control.add(tab1, text='Filtros')
     tab_control.add(tab2, text='Equalização')
+    tab_control.add(tab3, text='Operações')
     
     tab_control.pack(expand=1, fill='both')
 
     Equalizacao.equalizar_lena(tab2)
+    Operacoes.mostrar_tela(tab3)
 
     # Frame dentro da aba 'Filtros' para organizar com grid
     frame_filtros = tk.Frame(tab1)
@@ -243,7 +249,8 @@ def main():
                "Operador de Sobel", "Operador de Sobel em X", "Operador de Sobel em Y", "Operador de Prewitt", 
                "Operador de Prewitt em X", "Operador de Prewitt em Y", "Filtro Livre", "Negativo da Imagem",
                "Transformação Logaritmo", "Transformação Gamma", "Transformação Linear", "Transformação Faixa Dinâmica",
-               "Zoom-in", "Zoom-out", "Rotacionar Imagem", "Reflexão em X", "Reflexão em Y"]
+               "Zoom-in", "Zoom-out", "Rotacionar Imagem", "Reflexão (flip horizontal)", "Reflexão (flip vertical)",
+               "Warping"]
     filter_menu = ttk.Combobox(frame_meio, textvariable=filtro_val, values=filters, width=40)
     filter_menu.grid(row=1, column=0, padx=10, pady=5, sticky='nsew')
     filter_menu.bind("<<ComboboxSelected>>", atualizar_matriz_convolucao)
@@ -265,7 +272,6 @@ def main():
     apply_button.grid(row=7, column=0, padx=10, pady=10)
 
     print(imagem_original)
-
     
     root.mainloop()
 
