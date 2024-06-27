@@ -67,14 +67,14 @@ def aplicar_filtro(matriz):
             A = float(entry_A.get()) if entry_A.get() else 1.1
             imagem_filtrada = Filtros.filtragem_alto_reforco(imagem, A)
         elif filtro_selecionado == "Negativo da Imagem":
-            imagem_filtrada = Transformacoes.negativo_da_imagem(imagem, A)
+            imagem_filtrada = Transformacoes.negativo_da_imagem(imagem)
         elif filtro_selecionado == "Transformação Logaritmo":
             A = float(entry_A.get()) if entry_A.get() else 10
             imagem_filtrada = Transformacoes.logaritmo(imagem, A)
         elif filtro_selecionado == "Transformação Gamma":
             C = float(entry_A.get()) if entry_A.get() else 1
             Y = float(entry_Y.get()) if entry_Y.get() else 1
-            imagem_filtrada = Transformacoes.logaritmo(imagem, C, Y)
+            imagem_filtrada = Transformacoes.gamma(imagem, C, Y)
         elif filtro_selecionado == "Transformação Linear":
             a = float(entry_A.get()) if entry_A.get() else 1
             b = float(entry_B.get()) if entry_B.get() else 1
@@ -182,8 +182,11 @@ def atualizar_matriz_convolucao(event):
 
 
     if filtro_selecionado != "Transformação Gamma":
-        entry_Y.grid_forget()
-        Y_label.grid_forget()
+        try:
+            entry_Y.grid_forget()
+            Y_label.grid_forget()
+        except NameError:
+            pass
 
     # Atualizar as Entry widgets com os novos valores da matriz
     for i in range(3):

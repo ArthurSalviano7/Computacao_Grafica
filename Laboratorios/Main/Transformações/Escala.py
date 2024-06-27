@@ -4,29 +4,29 @@ from OpenGL.GLUT import *
 from OpenGL.GLU import *
 import numpy as np
 
-def scale_point(point, sx, sy, w):
+def ponto_escala(ponto, sx, sy, w):
     # Criação da matriz de identidade de escala 2D
-    scale_matrix = np.array([[sx, 0, 0],
+    matriz_escalonamento = np.array([[sx, 0, 0],
                              [0, sy, 0],
                              [0, 0, 1]])
 
     # Convertendo o ponto para um vetor coluna
-    point_vector = np.array([[point[0]], [point[1]],[w]])
+    pixel_vetor = np.array([[ponto[0]], [ponto[1]],[w]])
 
     # Aplicando a transformação de escala multiplicando a matriz de escala pelo vetor do ponto
-    scaled_point_vector = np.dot(scale_matrix, point_vector)
+    pixel_vetor_esc = np.dot(matriz_escalonamento, pixel_vetor)
     
-    return (scaled_point_vector[0][0], scaled_point_vector[1][0])
+    return (pixel_vetor_esc[0][0], pixel_vetor_esc[1][0])
 
 def realizar_escala(square_points_list, sx, sy):
     
-    point1, point2, point3, point4 = square_points_list
+    ponto1, ponto2, ponto3, ponto4 = square_points_list
 
-    point1 = scale_point(point1, sx, sy, 1)
-    point2 = scale_point(point2, sx, sy, 1)
-    point3 = scale_point(point3, sx, sy, 1)
-    point4 = scale_point(point4, sx, sy, 1)
+    ponto1 = ponto_escala(ponto1, sx, sy, 1)
+    ponto2 = ponto_escala(ponto2, sx, sy, 1)
+    ponto3 = ponto_escala(ponto3, sx, sy, 1)
+    ponto4 = ponto_escala(ponto4, sx, sy, 1)
 
-    return [point1, point2, point3, point4]
+    return [ponto1, ponto2, ponto3, ponto4]
 
 

@@ -6,12 +6,14 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 from pyopengltk import OpenGLFrame
+import tkinter as tk
 
 from Transformações import Rotacao
 from Transformações import Translacao
 from Transformações import Escala
 from Transformações import Cisalhamento
 from Transformações import Reflexao
+from Transformações import ReflexaoQualquer
 
 class AppOgl(OpenGLFrame):
     def initgl(self):
@@ -41,6 +43,10 @@ class AppOgl(OpenGLFrame):
 
         self.update()
 
+    def limpar(self):
+        self.points.clear()
+        self.redraw()
+
     def draw_axes(self, width, height): #Desenhar eixos X e Y 
         glBegin(GL_LINES)
         glColor3f(0.30, 0.30, 0.30)  # Cor para o eixo x
@@ -69,11 +75,11 @@ class AppOgl(OpenGLFrame):
         for k in range(int(steps)):
             x += xIncrement
             y += yIncrement
-            self.points.append((round(x), round(y)))
+            self.points.append((x, y))
             #self.draw_pixel(round(x), round(y))
     
 
-    #Método para desenhar quadrado na origem
+    #Método para desenhar quadrado na origem, usa o método DDA
     def square_points(self, size):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) # Quando desenhar novo quadrado, limpa a tela antes
         self.points = []
@@ -81,14 +87,15 @@ class AppOgl(OpenGLFrame):
 
         x = round(size)/2
         y = round(size)/2
-        self.DDA(-x, y, x, y)
-        self.DDA(x, y, x, -y)
-        self.DDA(x, -y, -x, -y)
-        self.DDA(-x, -y, -x, y)
+        self.DDA(0, 0, size, 0)
+        self.DDA(size, 0, size, size)
+        self.DDA(size, size, 0, size)
+        self.DDA(0, size, 0, 0)
 
-        self.square_points_list = [(-x,y), (x,y), (x,-y), (-x,-y)]
+        #Lista para armazenar os vértices do quadrado
+        self.square_points_list = [(0, 0), (0, size), (size, size), (size, 0)]
 
-        return (-x,y),(x,y),(x,-y),(-x,-y)
+        return (0, 0), (0, size), (size, size), (size, 0)
     
     #Método para desenhar quadrado após a transformação
     def draw_square(self, point1, point2, point3, point4):
@@ -178,11 +185,13 @@ class AppOgl(OpenGLFrame):
 
         #Desenha o novo quadrado rotacionado
         self.draw_square(*self.square_points_list)
-
-
-        
-        
-        
     
+    def reflexaoQualquer(self, m, b):
 
+        self.square_points_list = ReflexaoQualquer.realizar_reflexao_qualquer(self.square_points_list, m, b)
 
+        #Remove o quadrado anterior
+        self.points = []
+
+        #Desenha o novo quadrado rotacionado
+        self.draw_square(*self.square_points_list)

@@ -50,7 +50,7 @@ def logaritmo(imagem, a):
 
     return imagem_filtrada_convertida
 
-def logaritmo(imagem, c, gamma):
+def gamma(imagem, c, gamma):
     # Criar uma cópia da imagem para aplicar a Transformação
     imagem_filtrada = imagem.copy()
     # Obter largura e altura da imagem
