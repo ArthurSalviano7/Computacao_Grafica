@@ -2,7 +2,7 @@
 .vscode/
 .anima/
 /VitrineUploads/
-/__pychache__/
+__pychache__/
 node_modules/
 build
 .DS_Store

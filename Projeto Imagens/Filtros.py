@@ -18,7 +18,7 @@ def aplicar_filtro_personalizado(imagem, matriz_convolucao):
         for x in range(1, width - 1):
             # Calcular o produto escalar entre a vizinhança e a mascara
             # Extrair a vizinhança 3x3 do pixel atual (y-1 até y+2 seleciona as 
-            # linhas 'y-1', 'y' e 'y+1' da matriz, o mesmo acontece com as colunas(x-1 até x+2))
+            # linhas 'y-1', 'y' e 'y+1' da matriz, o mesmo acontece com as colunas(x-1 até x+2)) resulta em uma matriz 3x3 com pixel no centro
             vizinhanca = img_array[y - 1:y + 1 + 1,
                                      x - 1:x + 1 + 1]
             filtered_value = int(np.sum(vizinhanca * matriz_convolucao))

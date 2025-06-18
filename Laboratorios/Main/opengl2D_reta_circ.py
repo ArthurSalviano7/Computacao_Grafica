@@ -11,31 +11,36 @@ class Reta_circ(OpenGLFrame):
     def initgl(self):
         """Inicializa o ambiente OpenGL"""
         glClearColor(0.7, 0.7, 0.7, 0.0)  # Cor de fundo do openGL
-        glMatrixMode(GL_PROJECTION)
-        glLoadIdentity()
-        gluOrtho2D(-self.winfo_reqwidth()/2, self.winfo_reqwidth()/2, -self.winfo_reqheight()/2, self.winfo_reqheight()/2)
-        print("width x height: ", self.winfo_reqwidth(), "x", self.winfo_reqheight())
+        self.vp_width = self.winfo_reqwidth()
+        self.vp_height = self.winfo_reqheight()
+        print("width x height: ", self.vp_width, "x", self.vp_height)
+        
         self.pontos = []  # Lista de pontos para armazenar o desenho
+        self.redraw() # Sempre atualizar cena para aplicar alterações
     
     def redraw(self):
         self.draw_scene()
 
-    #Define a janela em coordenadas do mundo de acordo com a entrada do usuário
-    def definir_janela_mundo(self, width, height):
-        glMatrixMode(GL_PROJECTION)
-        glLoadIdentity()
-        gluOrtho2D(-width/2, width/2, -height/2, height/2)
-        glMatrixMode(GL_MODELVIEW)
-        glLoadIdentity()
-
+    # Define a janela em coordenadas do mundo de acordo com a entrada do usuário
+    def definir_janela_mundo(self, new_vp_width, new_vp_height):
+        self.vp_width = new_vp_width
+        self.vp_height = new_vp_height
         self.redraw()
-        self.update()
-
 
     def draw_scene(self):
         """Redesenha a cena OpenGL para que os objetos etc. fiquem na tela"""
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        self.draw_axes(self.winfo_reqwidth(), self.winfo_reqheight()) #Desenhar eixos X e Y
+        glMatrixMode(GL_PROJECTION)
+        glLoadIdentity()
+
+        #Definindo view port
+        gluOrtho2D(-self.vp_width/2, self.vp_width/2, -self.vp_height/2, self.vp_height/2)
+        
+         # --- Configuração da CÂMERA/MODELO para 2D ---
+        glMatrixMode(GL_MODELVIEW)
+        glLoadIdentity() # Resetar a matriz MODELVIEW para cada frame
+        
+        self.draw_axes(self.vp_width, self.vp_height) #Desenhar eixos X e Y
 
         # Desenha os pontos armazenados na lista
         glBegin(GL_POINTS)
@@ -44,7 +49,7 @@ class Reta_circ(OpenGLFrame):
             glVertex2f(point[0], point[1])
         glEnd()
 
-        self.update()
+        self.tkSwapBuffers() # Força a troca de buffers e atualização na tela
 
     def limpar(self):
         self.pontos.clear()
@@ -84,6 +89,8 @@ class Reta_circ(OpenGLFrame):
             y += y_increment
             self.pontos.append((round(x), round(y)))
         
+        self.redraw() # Sempre atualizar cena após alteração
+
         return ((x, y))
 
     def pontoCirculo(self, x, y):
@@ -115,6 +122,8 @@ class Reta_circ(OpenGLFrame):
             x += 1
             points.append((round(x), round(y)))
             self.pontoCirculo(round(x), round(y))
+        
+        self.redraw()  # Desenha a cena com o novo círculo (atualização)
         
         return points
     
@@ -201,13 +210,13 @@ def desenhar(tab6):
 
     # Frame para o lado direito
     frame_right = tk.Frame(tab6, width=800, height=600)
-    frame_right.pack(side=tk.RIGHT, fill=tk.BOTH, expand=False)
+    frame_right.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
     ogl_frame_reta_circ = Reta_circ(frame_right, width=800, height=600)
-    ogl_frame_reta_circ.pack(fill="both", expand=False)
+    ogl_frame_reta_circ.pack(fill="both", expand=True)
     
     # Atualização da janela
-    ogl_frame_reta_circ.animate = 1
+    #ogl_frame_reta_circ.animate = 1
 
     # Inserir tamanho da janela mundo
     entry_width = ctk.CTkEntry(frame_left, placeholder_text="Largura", width=50)
@@ -217,8 +226,8 @@ def desenhar(tab6):
     entry_height.grid(row=0, column=1, pady=1, padx=1)
 
     # Botão para definir janela mundo
-    btn_desenhar_circulo = tk.Button(frame_left, text="Def. Janela\nMundo", command=lambda: ogl_frame_reta_circ.definir_janela_mundo(int(entry_width.get()), int(entry_height.get())))
-    btn_desenhar_circulo.grid(row=0, column=2, pady=3, padx=2)
+    btn_janela_mundo = tk.Button(frame_left, text="Def. Janela\nMundo", command=lambda: ogl_frame_reta_circ.definir_janela_mundo(int(entry_width.get()), int(entry_height.get())))
+    btn_janela_mundo.grid(row=0, column=2, pady=3, padx=2)
 
     # Caixa de entrada para Raio do circulo
     entry_raio = ctk.CTkEntry(frame_left, placeholder_text="raio", width=50)
@@ -233,7 +242,7 @@ def desenhar(tab6):
     btn_desenhar_circulo.grid(row=2, column=1, padx=2)
 
     # Botão para desenhar um circulo pelo método Trigonométric
-    btn_desenhar_circulo = tk.Button(frame_left, text="Circulo\nTrigonométrica", command=lambda: ogl_frame_reta_circ.circEquacaoExplicita(int(entry_raio.get())))
+    btn_desenhar_circulo = tk.Button(frame_left, text="Circulo\nTrigonométrica", command=lambda: ogl_frame_reta_circ.circTrigonometrico(int(entry_raio.get())))
     btn_desenhar_circulo.grid(row=2, column=2)
 
     # Caixas de entrada para pontos da reta
