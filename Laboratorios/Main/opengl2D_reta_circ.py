@@ -28,19 +28,21 @@ class Reta_circ(OpenGLFrame):
         self.redraw()
 
     def draw_scene(self):
-        """Redesenha a cena OpenGL para que os objetos etc. fiquem na tela"""
+        """Redesenha a cena OpenGL para que os objetos fiquem na tela"""
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
 
         #Definindo view port
-        gluOrtho2D(-self.vp_width/2, self.vp_width/2, -self.vp_height/2, self.vp_height/2)
+        viewport_size = min(self.vp_width, self.vp_height)
+        half = viewport_size // 2
+        gluOrtho2D(-half, half, -half, half)
         
          # --- Configuração da CÂMERA/MODELO para 2D ---
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity() # Resetar a matriz MODELVIEW para cada frame
         
-        self.draw_axes(self.vp_width, self.vp_height) #Desenhar eixos X e Y
+        self.draw_axes(viewport_size, viewport_size) #Desenhar eixos X e Y
 
         # Desenha os pontos armazenados na lista
         glBegin(GL_POINTS)
@@ -136,8 +138,8 @@ class Reta_circ(OpenGLFrame):
         x = -raio
         while x <= raio:
             y = math.sqrt(raio**2 - x**2)
-            self.pontoCirculo(round(x), round(y))
-            x += 1
+            self.pontoCirculo(int(x), int(y))
+            x += 1 # Precisão do desenho
         
         self.redraw()  # Desenha a cena com o novo círculo
 
@@ -159,7 +161,7 @@ class Reta_circ(OpenGLFrame):
         self.pontos.append((x, -y))
         self.pontos.append((-x, -y))
 
-    '''Método para desenhar elipse pelo Algoritmo do Ponto-M edio para conversão matricial de elipses'''
+    '''Método para desenhar elipse pelo Algoritmo do Ponto-Medio para conversão matricial de elipses'''
     def elipsePontoMedio(self, a, b):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) # Quando desenhar nova elipse, limpa a tela antes
 
@@ -279,5 +281,5 @@ def desenhar(tab6):
 
      # Botão para Limpar objetos desenhados
     btn_desenhar_circulo = tk.Button(frame_left, text="Atualizar tela", command=lambda: ogl_frame_reta_circ.redraw())
-    btn_desenhar_circulo.grid(row=9, column=1, pady=20)
+    btn_desenhar_circulo.grid(row=9, column=0, pady=20)
 
