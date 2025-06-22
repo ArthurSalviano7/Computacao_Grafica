@@ -3,6 +3,9 @@
 .anima/
 /VitrineUploads/
 __pychache__/
+*.pyc
+*.pyd
+*.pyo
 node_modules/
 build
 .DS_Store

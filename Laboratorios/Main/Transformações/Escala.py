@@ -29,7 +29,7 @@ def realizar_escala(square_points_list, sx, sy):
 
     return [ponto1, ponto2, ponto3, ponto4]
 
-def ponto_escala3D(ponto, sx, sy, sz, w):
+def ponto_escala3D(ponto, sx, sy, sz):
     # Criação da matriz de identidade de escala 3D
     matriz_escalonamento = np.array([[sx, 0, 0, 0],
                              [0, sy, 0, 0],
@@ -37,18 +37,28 @@ def ponto_escala3D(ponto, sx, sy, sz, w):
                              [0, 0, 0, 1]])
 
     # Convertendo o ponto para um vetor coluna
-    pixel_vetor = np.array([[ponto[0]], [ponto[1]], [ponto[2]], [w]])
+    pixel_vetor = np.array([[ponto[0]], [ponto[1]], [ponto[2]], [ponto[3]]]) # [x, y, z, 1] => 1 = w
     # Aplicando a transformação de escala multiplicando a matriz de escala pelo vetor do ponto
     pixel_vetor_esc = np.dot(matriz_escalonamento, pixel_vetor)
     
-    return (pixel_vetor_esc[0][0], pixel_vetor_esc[1][0], pixel_vetor_esc[2][0])  # Retorna um ponto por vez (x, y, z)
+    return [pixel_vetor_esc[0][0], pixel_vetor_esc[1][0], pixel_vetor_esc[2][0], pixel_vetor_esc[3][0]]  # Retorna um ponto por vez (x, y, z)
 
 def realizar_escala3D(cube_points_list, sx, sy, sz):
-
     # Realiza a transformação um ponto por vez e retorna a lista de pontos transformada
     for i in range(len(cube_points_list)):
-        cube_points_list[i] = ponto_escala3D(cube_points_list[i], sx, sy, sz, 1)
+        cube_points_list[i] = ponto_escala3D(cube_points_list[i], sx, sy, sz)
 
     return cube_points_list
+
+def get_scale_Matrix3D(Sx, Sy, Sz):
+    return np.array([[Sx, 0, 0, 0],
+                    [0, Sy, 0, 0],
+                    [0, 0, Sz, 0],
+                    [0, 0, 0, 1]])
+
+def get_scale_Matrix2D(Sx, Sy):
+    return np.array([[Sx, 0, 0],
+                     [0, Sy, 0],
+                     [0, 0, 1]])
 
 
