@@ -8,7 +8,8 @@ import Filtros
 import Transformacoes
 import Equalizacao
 import Operacoes
-import Deformacao
+import Morfismo
+import Tab_Transformacoes
 
 global entry_A, entry_Y
 
@@ -212,17 +213,20 @@ def main():
     tab2 = tk.Frame(tab_control)
     tab3 = tk.Frame(tab_control)
     tab4 = tk.Frame(tab_control)
+    tab5 = tk.Frame(tab_control)
 
     tab_control.add(tab1, text='Filtros')
     tab_control.add(tab2, text='Equalização')
     tab_control.add(tab3, text='Operações')
     tab_control.add(tab4, text='Deformação')
+    tab_control.add(tab5, text='Transformações')
     
     tab_control.pack(expand=1, fill='both')
 
     Equalizacao.equalizar_lena(tab2)
     Operacoes.mostrar_tela(tab3)
-    Deformacao.mostrar_tela(tab4)
+    Morfismo.mostrar_tela(tab4)
+    Tab_Transformacoes.mostrar_tela(tab5)
 
     # Frame dentro da aba 'Filtros' para organizar com grid
     frame_filtros = tk.Frame(tab1)

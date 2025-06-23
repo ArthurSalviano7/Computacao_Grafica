@@ -155,11 +155,10 @@ def create_morphing(img0_path, img1_path, t_values, v_path='v_pontos.npy', w_pat
                 bary_coords = get_barycentric_coords(u_pixel, u_tri_vertices)
 
                 if bary_coords is None:
-                    # Este caso deveria ser raro se find_simplex funcionou e a lógica baricêntrica estiver boa.
-                    # Mas é um fallback para segurança.
+                    # Caso em que as coordenadas nao foram obtidas 
                     rho0_u = get_pixel_grayscale(img0, x, y, width, height)
                     rho1_u = get_pixel_grayscale(img1, x, y, width, height)
-                    rho_t_u = (1 - t) * rho0_u + t * rho1_u
+                    rho_t_u = (1 - t) * rho0_u + t * rho1_u # Determine a densidade de imagem e adiciona a imagem
                     morphed_image.putpixel((x, y), int(np.clip(rho_t_u, 0, 255)))
                     continue
                 
