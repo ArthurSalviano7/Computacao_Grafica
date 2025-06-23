@@ -96,15 +96,16 @@ class HeartSimulation(OpenGLFrame):
         
 
 def desenhar(tab5):
-    frame_left = tk.Frame(tab5, width=200, height=600)
+    frame_left = tk.Frame(tab5, width=300, height=600)
     frame_left.configure(background="#000C66")
     frame_left.pack(side=tk.LEFT, fill=tk.BOTH, expand=False)
+    frame_left.pack_propagate(False)
 
     # Frame para o lado direito
     frame_right = tk.Frame(tab5, width=800, height=600)
     frame_right.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
-    ogl_ecg = HeartSimulation(frame_right, width=800, height=500)
+    ogl_ecg = HeartSimulation(frame_right, width=800, height=600)
     ogl_ecg.pack(fill="both", expand=True)
 
     
@@ -123,10 +124,8 @@ def desenhar(tab5):
 
     # Caixa de entrada para o tempo da simulação
     entry_time = ctk.CTkEntry(frame_left, placeholder_text="Tempo simulação (s)", width=100)
-    entry_width.grid(row=1, column=0, columnspan=2, padx=5, pady=5)
+    entry_time.grid(row=1, column=0, columnspan=2, padx=5, pady=5)
 
     # Botão para iniciar a simulação
     btn_start_ecg = tk.Button(frame_left, text="Iniciar ECG", command=lambda: ogl_ecg.start_simulation(entry_time.get()))
-    btn_start_ecg.grid(row=1, column=1, pady=10)
-
-    
+    btn_start_ecg.grid(row=1, column=2, pady=10)
