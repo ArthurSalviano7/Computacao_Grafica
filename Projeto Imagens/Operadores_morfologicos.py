@@ -9,15 +9,19 @@ def dilatacao_cinza(imagem):
     nova_imagem = Image.new("L", (largura, altura))
     novos_pixels = nova_imagem.load()
 
-    for y in range(1, altura - 1):
+    for y in range(1, altura - 1):  # Evita bordas
         for x in range(1, largura - 1):
-            vizinhos = []
-            for j in range(-1, 2):
+            max_valor = -float('inf')  
+            for j in range(-1, 2):  # Percorre a vizinhança 3x3
                 for i in range(-1, 2):
-                    vizinhos.append(pixels[x + i, y + j])
-            novos_pixels[x, y] = max(vizinhos)
+                    valor_somado = pixels[x + i, y + j] + 1  
+                    if valor_somado > max_valor:
+                        max_valor = valor_somado
+            novos_pixels[x, y] = max_valor
 
     return nova_imagem
+
+from PIL import Image
 
 def erosao_cinza(imagem):
     largura, altura = imagem.size
@@ -25,17 +29,76 @@ def erosao_cinza(imagem):
     nova_imagem = Image.new("L", (largura, altura))
     novos_pixels = nova_imagem.load()
 
-    for y in range(1, altura - 1):
+    for y in range(1, altura - 1): 
         for x in range(1, largura - 1):
-            vizinhos = []
-            for j in range(-1, 2):
+            min_valor = float('inf')  
+            for j in range(-1, 2):  
                 for i in range(-1, 2):
-                    vizinhos.append(pixels[x + i, y + j])
-            novos_pixels[x, y] = min(vizinhos)
+                    valor_subtraido = pixels[x + i, y + j] - 1  
+                    if valor_subtraido < min_valor:
+                        min_valor = valor_subtraido
+            novos_pixels[x, y] = min_valor
 
     return nova_imagem
 
+def abertura_cinza(imagem):
+    img_erosao = erosao_cinza(imagem)
+    img_abertura = dilatacao_cinza(img_erosao)
 
+    return img_abertura
+
+def fechamento_cinza(imagem):
+    img_dilatacao = dilatacao_cinza(imagem)
+    img_fechamento = erosao_cinza(img_dilatacao)
+
+    return img_fechamento
+
+def gradiente_cinza(imagem):
+
+    img_dilatada = dilatacao_cinza(imagem)
+    img_erodida = erosao_cinza(imagem)
+    array_dilatacao = np.array(img_dilatada, dtype=np.int16)
+    array_erosao = np.array(img_erodida, dtype=np.int16)
+    grad = array_dilatacao - array_erosao
+    grad = np.clip(grad, 0, 255).astype(np.uint8)
+    
+    return Image.fromarray(grad)
+
+def contorno_interno_cinza(imagem):
+    img_erodida = erosao_cinza(imagem)
+    arr_orig = np.array(imagem, dtype=np.int16)
+    arr_ero = np.array(img_erodida, dtype=np.int16)
+    contorno = arr_orig - arr_ero
+    contorno = np.clip(contorno, 0, 255).astype(np.uint8)
+    
+    return Image.fromarray(contorno)
+
+def contorno_externo_cinza(imagem):
+    img_dilatada = dilatacao_cinza(imagem)
+    arr_dil = np.array(img_dilatada, dtype=np.int16)
+    arr_orig = np.array(imagem, dtype=np.int16) 
+    contorno = arr_dil - arr_orig
+    contorno = np.clip(contorno, 0, 255).astype(np.uint8)
+    
+    return Image.fromarray(contorno)
+
+def top_hat_cinza(imagem):
+    img_abertura = abertura_cinza(imagem)
+    arr_orig = np.array(imagem, dtype=np.int16)
+    arr_abert = np.array(img_abertura, dtype=np.int16)
+    top_hat = arr_orig - arr_abert
+    top_hat = np.clip(top_hat, 0, 255).astype(np.uint8)
+    
+    return Image.fromarray(top_hat)
+
+def bottom_hat_cinza(imagem):
+    img_fechamento = fechamento_cinza(imagem)
+    arr_fech = np.array(img_fechamento, dtype=np.int16)
+    arr_orig = np.array(imagem, dtype=np.int16)
+    bottom_hat = arr_fech - arr_orig
+    bottom_hat = np.clip(bottom_hat, 0, 255).astype(np.uint8)
+    
+    return Image.fromarray(bottom_hat)
 
 def binarizar_por_media(imagem):
     imagem_array = np.array(imagem)
@@ -157,7 +220,7 @@ def mostrar_tela(tab):
     # Combobox central 
     combo_operacoes_original = ttk.Combobox(
         frame_controles_cinza,
-        values=[ "Dilatação", "Erosão",],
+        values=[ "Dilatação", "Erosão","Abertura", "Fechamento", "Gradiente","Contorno interno", "Contorno externo", "Top-hat" , "Bottom-hat" ],
         state="readonly",
         width=15
     )
@@ -168,7 +231,7 @@ def mostrar_tela(tab):
     btn_aplicar_original = tk.Button(
         frame_controles_cinza,
         text="Aplicar Operação",
-        command=lambda: aplicar_operacao_original()
+        command=lambda: aplicar_operacao_cinza()
     )
     btn_aplicar_original.pack(side=tk.LEFT, padx=10)
 
@@ -265,7 +328,7 @@ def mostrar_tela(tab):
                 resultado = bottom_hat(imagem_bin[0])
                 display_image(resultado, label_resultado)
     
-    def aplicar_operacao_original():
+    def aplicar_operacao_cinza():
         if imagem_original[0]:
             operacao = combo_operacoes_original.get()
             if operacao == "Dilatação":
@@ -273,4 +336,25 @@ def mostrar_tela(tab):
                 display_image(resultado, label_resultado_original)
             elif operacao == "Erosão":
                 resultado = erosao_cinza(imagem_original[0])
+                display_image(resultado, label_resultado_original)
+            elif operacao == "Abertura":
+                resultado = abertura_cinza(imagem_original[0])
+                display_image(resultado, label_resultado_original)
+            elif operacao == "Fechamento":
+                resultado = fechamento_cinza(imagem_original[0])
+                display_image(resultado, label_resultado_original)
+            elif operacao == "Gradiente":
+                resultado = gradiente_cinza(imagem_original[0])
+                display_image(resultado, label_resultado_original)
+            elif operacao == "Contorno interno":
+                resultado = contorno_interno_cinza(imagem_original[0])
+                display_image(resultado, label_resultado_original)
+            elif operacao == "Contorno externo":
+                resultado = contorno_externo_cinza(imagem_original[0])
+                display_image(resultado, label_resultado_original)
+            elif operacao == "Top-hat":
+                resultado = top_hat_cinza(imagem_original[0])
+                display_image(resultado, label_resultado_original)
+            elif operacao == "Bottom-hat":
+                resultado = bottom_hat_cinza(imagem_original[0])
                 display_image(resultado, label_resultado_original)
