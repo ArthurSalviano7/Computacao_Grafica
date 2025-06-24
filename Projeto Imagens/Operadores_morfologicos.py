@@ -139,23 +139,22 @@ def mostrar_tela(tab):
     imagem_bin = [None]
 
     # --- PARTE DE CIMA (Imagem original em tons de cinza) ---
-    # Container principal (igual ao da parte binária)
     frame_cinza = tk.Frame(frame)
     frame_cinza.grid(row=0, column=0, columnspan=2, pady=10)
 
-    # Label "Imagem Original" (igual ao "Imagem Binarizada" da parte inferior)
+    # Label "Imagem Original" 
     label_original = tk.Label(frame_cinza, text="Imagem Original")
     label_original.grid(row=0, column=0, padx=10, pady=10)
 
-    # Frame para controles (igual ao frame_bin da parte inferior)
+    # Frame para controles 
     frame_controles_cinza = tk.Frame(frame_cinza)
     frame_controles_cinza.grid(row=1, column=0, columnspan=2, pady=5)
 
-    # Imagem original (lado esquerdo) - igual à parte binária
+    # Imagem original (lado esquerdo) 
     label_imagem_original = tk.Label(frame_controles_cinza)
     label_imagem_original.pack(side=tk.LEFT, padx=10)
 
-    # Combobox central - mantendo o mesmo estilo
+    # Combobox central 
     combo_operacoes_original = ttk.Combobox(
         frame_controles_cinza,
         values=[ "Dilatação", "Erosão",],
@@ -165,7 +164,7 @@ def mostrar_tela(tab):
     combo_operacoes_original.pack(side=tk.LEFT, padx=10)
     combo_operacoes_original.set("Dilatação")
 
-    # Botão "Aplicar Operação" - mesmo estilo da parte binária
+    # Botão "Aplicar Operação" 
     btn_aplicar_original = tk.Button(
         frame_controles_cinza,
         text="Aplicar Operação",
@@ -173,12 +172,12 @@ def mostrar_tela(tab):
     )
     btn_aplicar_original.pack(side=tk.LEFT, padx=10)
 
-    # Imagem resultado (lado direito) - igual ao label_resultado da parte binária
+    # Imagem resultado (lado direito)
     label_resultado_original = tk.Label(frame_controles_cinza)
     label_resultado_original.pack(side=tk.LEFT, padx=10)
 
-    # Botão "Carregar Imagem Original" (posicionado igual ao da parte binária)
-    btn_carregar_original = tk.Button(frame_cinza, text="Carregar Imagem Original", command=lambda: carregar_original())
+    # Botão "Carregar Imagem Original" 
+    btn_carregar_original = tk.Button(frame_cinza, text="Carregar Imagem", command=lambda: carregar_original())
     btn_carregar_original.grid(row=0, column=1, padx=10, pady=10)
 
     def carregar_original():
