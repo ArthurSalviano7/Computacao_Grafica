@@ -121,7 +121,6 @@ def mostrar_tela(tab3):
 
     imagem2 = Image.open('./imagens/airplane.pgm')
     # Frame dentro da aba 'Filtros' para organizar com grid
-     # Frame dentro da aba 'Filtros' para organizar com grid
     frame_filtros = tk.Frame(tab3)
     frame_filtros.pack(expand=1, fill='both', padx=10, pady=10)
 
