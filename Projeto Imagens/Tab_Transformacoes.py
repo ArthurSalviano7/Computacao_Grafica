@@ -94,6 +94,25 @@ def aplicar_transf(): # Removi 'matriz' como parâmetro, pois não é usado aqui
         imagem_transformada = Transformacoes.flip_horizontal(imagem)
     elif transf_selecionada == "Reflexão (flip vertical)":
         imagem_transformada = Transformacoes.flip_vertical(imagem)
+    elif transf_selecionada == "Negativo da Imagem":
+        imagem_transformada = Transformacoes.negativo_da_imagem(imagem)
+    elif transf_selecionada == "Transformação Linear":
+        a = float(param_entries.get("a").get())
+        b = float(param_entries.get("b").get())
+        imagem_transformada = Transformacoes.linear(imagem, a, b)
+    elif transf_selecionada == "Transformação Logaritmo":
+        a = float(param_entries.get("a").get())
+        imagem_transformada = Transformacoes.logaritmo(imagem, a)
+    elif transf_selecionada == "Transformação Gamma":
+        c = float(param_entries.get("c").get())
+        gamma = float(param_entries.get("y").get())
+        imagem_transformada = Transformacoes.gamma(imagem, c, gamma)
+    elif transf_selecionada == "Transformação Faixa Dinâmica":
+        w_target = float(param_entries.get("w_target").get())
+        imagem_transformada = Transformacoes.faixa_dinamica(imagem, w_target)
+    elif transf_selecionada == "Transformação Intensidade Geral":
+        largura = float(param_entries.get("largura").get())
+        imagem_transformada = Transformacoes.intensidade_geral(imagem, largura)
     
     # Exibir a imagem processada, se houver
     if imagem_transformada:
@@ -202,11 +221,48 @@ def update_transform_parameters(event): # Renomeei para ser mais específico
         param_entries["j"] = tk.Entry(frame_parametros_transf, width=10)
         param_entries["j"].grid(row=row_offset, column=3, padx=5, pady=2, sticky="w")
         param_entries["j"].insert(0, 0)
+        
+    elif selected_transf == "Transformação Linear":
+        param_labels["a"] = tk.Label(frame_parametros_transf, text="a:")
+        param_labels["a"].grid(row=row_offset, column=0, padx=5, pady=2, sticky="w")
+        param_entries["a"] = tk.Entry(frame_parametros_transf, width=10)
+        param_entries["a"].grid(row=row_offset, column=1, padx=5, pady=2, sticky="w")
 
-    # Se precisar de outros campos (como os que você mencionou "c, d" e "e, f, i, i"),
-    # você precisará mapeá-los para os parâmetros da sua função de cisalhamento.
-    # Por exemplo, se sua função Transformacoes.cisalhamento_imagem aceita 4 ou 6 parâmetros,
-    # você criaria as entries correspondentes aqui.
+        row_offset +=1
+        param_labels["b"] = tk.Label(frame_parametros_transf, text="b:")
+        param_labels["b"].grid(row=row_offset, column=0, padx=5, pady=2, sticky="w")
+        param_entries["b"] = tk.Entry(frame_parametros_transf, width=10)
+        param_entries["b"].grid(row=row_offset, column=1, padx=5, pady=2, sticky="w")
+    
+    elif selected_transf == "Transformação Logaritmo":
+        param_labels["a"] = tk.Label(frame_parametros_transf, text="a:")
+        param_labels["a"].grid(row=row_offset, column=0, padx=5, pady=2, sticky="w")
+        param_entries["a"] = tk.Entry(frame_parametros_transf, width=10)
+        param_entries["a"].grid(row=row_offset, column=1, padx=5, pady=2, sticky="w")
+
+    elif selected_transf == "Transformação Gamma":
+        param_labels["c"] = tk.Label(frame_parametros_transf, text="c:")
+        param_labels["c"].grid(row=row_offset, column=0, padx=5, pady=2, sticky="w")
+        param_entries["c"] = tk.Entry(frame_parametros_transf, width=10)
+        param_entries["c"].grid(row=row_offset, column=1, padx=5, pady=2, sticky="w")
+
+        row_offset += 1
+        param_labels["y"] = tk.Label(frame_parametros_transf, text="y:")
+        param_labels["y"].grid(row=row_offset, column=0, padx=5, pady=2, sticky="w")
+        param_entries["y"] = tk.Entry(frame_parametros_transf, width=10)
+        param_entries["y"].grid(row=row_offset, column=1, padx=5, pady=2, sticky="w")
+    
+    elif selected_transf == "Transformação Faixa Dinâmica":
+        param_labels["w_target"] = tk.Label(frame_parametros_transf, text="w_target:")
+        param_labels["w_target"].grid(row=row_offset, column=0, padx=5, pady=2, sticky="w")
+        param_entries["w_target"] = tk.Entry(frame_parametros_transf, width=10)
+        param_entries["w_target"].grid(row=row_offset, column=1, padx=5, pady=2, sticky="w")
+    
+    elif selected_transf == "Transformação Intensidade Geral":
+        param_labels["largura"] = tk.Label(frame_parametros_transf, text="largura:")
+        param_labels["largura"].grid(row=row_offset, column=0, padx=5, pady=2, sticky="w")
+        param_entries["largura"] = tk.Entry(frame_parametros_transf, width=10)
+        param_entries["largura"].grid(row=row_offset, column=1, padx=5, pady=2, sticky="w")
 
     # definir valores padrão para as entries
     for key, entry_widget in param_entries.items():
@@ -214,12 +270,6 @@ def update_transform_parameters(event): # Renomeei para ser mais específico
         elif key == "sx" or key == "sy": entry_widget.insert(0, "1.5")
         elif key == "tx" or key == "ty": entry_widget.insert(0, "50")
         elif key == "ax" or key == "ay": entry_widget.insert(0, "0.2")
-
-    # Isso substituirá a função atualizar_matriz_convolucao no combobox bind.
-    # Se você ainda tiver filtros de convolução na mesma combobox, você precisará
-    # refatorar para ter uma combobox para transformações e outra para filtros,
-    # ou uma lógica mais complexa dentro de update_transform_parameters para distinguir.
-
 
 # --- Função para mostrar a tela de Transformações (tab5) ---
 def mostrar_tela(tab5): 
@@ -252,7 +302,9 @@ def mostrar_tela(tab5):
     # Seletor de transformações
     filtro_val = tk.StringVar(value="Rotacao") # Valor inicial para testar
     # Adicionei Escala, Translacao, Rotacao e Cisalhamento
-    transform_options = ["Escala", "Translacao", "Rotacao", "Reflexão (flip horizontal)", "Reflexão (flip vertical)", "Cisalhamento"]
+    transform_options = ["Escala", "Translacao", "Rotacao", "Reflexão (flip horizontal)", "Reflexão (flip vertical)", "Cisalhamento",
+                         "Negativo da Imagem", "Transformação Linear", "Transformação Logaritmo", "Transformação Gamma", 
+                         "Transformação Faixa Dinâmica", "Transformação Intensidade Geral"]
     filter_menu = ttk.Combobox(frame_meio, textvariable=filtro_val, values=transform_options, width=40)
     filter_menu.grid(row=1, column=0, padx=10, pady=5, sticky='nsew')
     # Binda a nova função de atualização de parâmetros

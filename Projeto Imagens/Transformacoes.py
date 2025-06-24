@@ -1,105 +1,103 @@
 import math
+from turtle import width
 import numpy as np
 from PIL import Image, ImageTk
 
 # TRANSFORMAÇÕES
 def negativo_da_imagem(imagem):
     # Criar uma cópia da imagem para aplicar a Transformação
-    imagem_filtrada = imagem.copy()
+    imagem_transf = imagem.copy()
     # Obter largura e altura da imagem
     height, width = imagem.shape
     # Converter imagem para matriz numpy
     img_array = np.array(imagem)
-    
 
     # Aplicar o filtro
-    for y in range(0, height):
-        for x in range(0, width):
-            valor_transformado = 255 - img_array[y, x] # S = 255 - r
+    for x in range(0, height):
+        for y in range(0, width):
+            valor_transformado = 255 - img_array[x, y] # S = 255 - r
             
-            imagem_filtrada[y, x] = valor_transformado
+            imagem_transf[x, y] = valor_transformado
 
     # Converter a matriz filtrada de volta para imagem PIL
-    imagem_filtrada_convertida = Image.fromarray(imagem_filtrada.astype('uint8'), 'L')
+    imagem_transf_convertida = Image.fromarray(imagem_transf.astype('uint8'), 'L')
 
-    print(imagem_filtrada, "\n")
+    print(imagem_transf, "\n")
 
-    return imagem_filtrada_convertida
+    return imagem_transf_convertida
 
 def logaritmo(imagem, a):
     # Criar uma cópia da imagem para aplicar a Transformação
-    imagem_filtrada = imagem.copy()
+    imagem_transf = imagem.copy()
     # Obter largura e altura da imagem
     height, width = imagem.shape
     # Converter imagem para matriz numpy
     img_array = np.array(imagem)
     
-
     # Aplicar o filtro
-    for y in range(0, height):
-        for x in range(0, width):
-            valor_transformado = a * np.log(img_array[y, x] + 1)   # S = a * log(r + 1)
+    for x in range(0, height):
+        for y in range(0, width):
+            valor_transformado = a * np.log(img_array[x, y] + 1)   # S = a * log(r + 1)
             
-            imagem_filtrada[y, x] = valor_transformado
+            imagem_transf[x, y] = valor_transformado
 
     # Converter a matriz filtrada de volta para imagem PIL
-    imagem_filtrada_convertida = Image.fromarray(imagem_filtrada.astype('uint8'), 'L')
+    imagem_transf_convertida = Image.fromarray(imagem_transf.astype('uint8'), 'L')
 
-    print(imagem_filtrada, "\n")
+    print(imagem_transf, "\n")
 
-    return imagem_filtrada_convertida
+    return imagem_transf_convertida
 
 def gamma(imagem, c, gamma):
     # Criar uma cópia da imagem para aplicar a Transformação
-    imagem_filtrada = imagem.copy()
+    imagem_transf = imagem.copy()
     # Obter largura e altura da imagem
     height, width = imagem.shape
     # Converter imagem para matriz numpy
     img_array = np.array(imagem)
 
     # Aplicar o filtro
-    for y in range(0, height):
-        for x in range(0, width):
+    for x in range(0, height):
+        for y in range(0, width):
             # S = c * r**y
-            valor_transformado = round(c * (img_array[y, x] ** gamma))
+            valor_transformado = round(c * (img_array[x, y] ** gamma))
             valor_transformado = np.clip(valor_transformado, 0, 255)       
-            imagem_filtrada[y, x] = valor_transformado
+            imagem_transf[x, y] = valor_transformado
 
 
     # Converter a matriz filtrada de volta para imagem PIL
-    imagem_filtrada_convertida = Image.fromarray(imagem_filtrada.astype('uint8'), 'L')
+    imagem_transf_convertida = Image.fromarray(imagem_transf.astype('uint8'), 'L')
 
-    print(imagem_filtrada, "\n")
+    print(imagem_transf, "\n")
 
-    return imagem_filtrada_convertida
+    return imagem_transf_convertida
 
 def linear(imagem, a, b):
     # Criar uma cópia da imagem para aplicar a Transformação
-    imagem_filtrada = imagem.copy()
+    imagem_transf = imagem.copy()
     # Obter largura e altura da imagem
     height, width = imagem.shape
     # Converter imagem para matriz numpy
     img_array = np.array(imagem)
 
     # Aplicar o filtro
-    for y in range(0, height):
-        for x in range(0, width):
+    for x in range(0, height):
+        for y in range(0, width):
             # S = a * r + b
-            valor_transformado = round(a * img_array[y, x] + b)
+            valor_transformado = round(a * img_array[x, y] + b)
             valor_transformado = np.clip(valor_transformado, 0, 255)       
-            imagem_filtrada[y, x] = valor_transformado
-
+            imagem_transf[x, y] = valor_transformado
 
     # Converter a matriz filtrada de volta para imagem PIL
-    imagem_filtrada_convertida = Image.fromarray(imagem_filtrada.astype('uint8'), 'L')
+    imagem_transf_convertida = Image.fromarray(imagem_transf.astype('uint8'), 'L')
 
-    print(imagem_filtrada, "\n")
+    print(imagem_transf, "\n")
 
-    return imagem_filtrada_convertida
+    return imagem_transf_convertida
 
-def faixa_dinamica_orig(imagem, w_target):
+def faixa_dinamica(imagem, w_target):
     # Criar uma cópia da imagem para aplicar a Transformação
-    imagem_filtrada = imagem.copy()
+    imagem_transf = imagem.copy()
     # Obter largura e altura da imagem
     height, width = imagem.shape
     # Converter imagem para matriz numpy
@@ -109,40 +107,48 @@ def faixa_dinamica_orig(imagem, w_target):
     fmin = np.min(img_array)
     fmax = np.max(img_array)
 
-    # Aplicar o filtro
-    for y in range(0, height):
-        for x in range(0, width):
+    # Aplicar a transformacao
+    for x in range(0, height):
+        for y in range(0, width):
             # S = (f - fmin / fmax - fmin) * w_target
-            valor_transformado = round(((img_array[y, x] - fmin) / (fmax - fmin)) * w_target)
+            valor_transformado = round(((img_array[x, y] - fmin) / (fmax - fmin)) * w_target)
             valor_transformado = np.clip(valor_transformado, 0, 255)       
-            imagem_filtrada[y, x] = valor_transformado
+            imagem_transf[x, y] = valor_transformado
 
 
     # Converter a matriz filtrada de volta para imagem PIL
-    imagem_filtrada_convertida = Image.fromarray(imagem_filtrada.astype('uint8'), 'L')
+    imagem_transf_convertida = Image.fromarray(imagem_transf.astype('uint8'), 'L')
 
-    print(imagem_filtrada, "\n")
+    print(imagem_transf, "\n")
 
-    return imagem_filtrada_convertida
+    return imagem_transf_convertida
 
-def faixa_dinamica(imagem, w_target):
+def intensidade_geral(imagem, largura):
+    # Criar uma cópia da imagem para aplicar a Transformação
+    imagem_transf = imagem.copy()
+    height, width = imagem.shape
+    
     # Converter imagem para matriz numpy
     img_array = np.array(imagem, dtype=np.float64)
-
-    # Pegar os valores min e max da imagem (nível de cinza)
-    fmin = np.min(img_array)
-    fmax = np.max(img_array)
-
-    # Aplicar a transformação para ajustar a faixa dinâmica
-    img_array = ((img_array - fmin) / (fmax - fmin)) * (w_target - 1)
     
+    # Pegar o centro dos valores da imagem (nível de cinza)
+    w = int(np.max(img_array) / 2) # Ex: L = 256, w = 127
+
+    # Aplicar a transformação intensidade geral
+    for x in range(0, height):
+        for y in range(0, width):
+            # S = 255*(1 / 1 + e^ -(r - w)/largura
+            valor_transformado = int(255 * ( 1 / (1 + np.exp( -( (img_array[x, y] - w) / largura )))))
+            valor_transformado = np.clip(valor_transformado, 0, 255)       
+            imagem_transf[x, y] = valor_transformado
+
     # Arredondar para os valores inteiros mais próximos
-    img_array = np.round(img_array).astype(np.uint8)
+    img_array = np.round(imagem_transf).astype(np.uint8)
 
     # Converter a matriz filtrada de volta para imagem PIL
-    imagem_filtrada_convertida = Image.fromarray(img_array, 'L')
+    imagem_transf_convertida = Image.fromarray(img_array, 'L')
 
-    return imagem_filtrada_convertida
+    return imagem_transf_convertida
 
 
 # TRANSFORMAÇÕES GEOMÉTRICAS
@@ -219,66 +225,6 @@ def translacao_imagem(imagem, tx, ty):
 
     return imagem_transladada_pil
 
-def zoom_in(imagem):
-    altura_original, largura_original = imagem.shape
-    largura_nova = largura_original * 2
-    altura_nova = altura_original * 2
-    
-    print("Imagem Original:")
-    print(largura_original, " x ", altura_original)
-    # Converter imagem para matriz numpy
-    img_array = np.array(imagem)
-    
-    # Criar nova matriz para a imagem ampliada
-    img_ampliada = np.zeros((altura_nova, largura_nova), dtype=np.uint8)
-    
-    # Ampliar a imagem duplicando os pixels
-    for y in range(altura_original):
-        for x in range(largura_original):
-            img_ampliada[2*y, 2*x] = img_array[y, x]  # Preencher o pixel original
-            img_ampliada[2*y+1, 2*x] = img_array[y, x]  # Repetir na direção X
-            img_ampliada[2*y, 2*x+1] = img_array[y, x]  # Repetir na direção Y
-            img_ampliada[2*y+1, 2*x+1] = img_array[y, x]  # Repetir na direção X e Y
-    
-    
-    # Converter matriz de volta para imagem PIL
-    imagem_ampliada = Image.fromarray(img_ampliada)
-    print("Imagem Transformada:")
-    print(imagem_ampliada)
-    
-    return imagem_ampliada
-
-def zoom_out(imagem):
-    altura_original, largura_original  = imagem.shape
-    largura_nova = largura_original // 2
-    altura_nova = altura_original // 2
-    
-    print("Imagem original: ")
-    print(largura_original, " x ", altura_original)
-
-    # Converter imagem para matriz numpy
-    img_array = np.array(imagem)
-    
-    # Criar nova matriz para a imagem reduzida
-    img_reduzida = np.zeros((altura_nova, largura_nova), dtype=np.uint8)
-    
-    # Reduzir a imagem calculando a média dos blocos de 2x2 pixels
-    for y in range(altura_nova):
-        for x in range(largura_nova):
-            # Calcular a média dos quatro pixels na imagem original
-            pixel1 = np.uint16(img_array[2*y, 2*x])
-            pixel2 = np.uint16(img_array[2*y+1, 2*x])
-            pixel3 = np.uint16(img_array[2*y, 2*x+1])
-            pixel4 = np.uint16(img_array[2*y+1, 2*x+1])
-            pixel_medio = (pixel1 + pixel2 + pixel3 + pixel4) // 4
-            img_reduzida[y, x] = np.uint8(pixel_medio)
-    
-    # Converter matriz de volta para imagem PIL
-    imagem_reduzida = Image.fromarray(img_reduzida)
-    print("Imagem reduzida: ", imagem_reduzida)
-
-    return imagem_reduzida
-
 def rotacionar_imagem(imagem, angulo):
     altura_original, largura_original = imagem.shape
     
@@ -321,7 +267,6 @@ def rotacionar_imagem(imagem, angulo):
     
     return imagem_rotacionada
 
-
 def flip_horizontal(imagem):
     altura_original, largura_original  = imagem.shape
     
@@ -354,7 +299,7 @@ def cisalhar_imagem(imagem, a, b, c, d, e, f, i, j):
     # Converter imagem para matriz numpy
     img_array = np.array(imagem)
     
-    # Calcular a dimensão da nova imagem para garantir que caiba o losango
+    # Calcular a dimensão da nova imagem para garantir que cabe o losango
     largura_nova = int(np.sqrt((largura_original**2 + altura_original**2) / 2) * 2)
     altura_nova = largura_nova
     img_cis = np.zeros((altura_nova, largura_nova), dtype=img_array.dtype)
