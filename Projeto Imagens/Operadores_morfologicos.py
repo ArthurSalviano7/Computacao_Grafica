@@ -55,46 +55,42 @@ def gradiente_cinza(imagem):
 
     img_dilatada = dilatacao_cinza(imagem)
     img_erodida = erosao_cinza(imagem)
-    array_dilatacao = np.array(img_dilatada, dtype=np.int16)
-    array_erosao = np.array(img_erodida, dtype=np.int16)
+    array_dilatacao = np.array(img_dilatada)
+    array_erosao = np.array(img_erodida)
     grad = array_dilatacao - array_erosao
-    grad = np.clip(grad, 0, 255).astype(np.uint8)
+   
     
     return Image.fromarray(grad)
 
 def contorno_interno_cinza(imagem):
     img_erodida = erosao_cinza(imagem)
-    arr_orig = np.array(imagem, dtype=np.int16)
-    arr_ero = np.array(img_erodida, dtype=np.int16)
+    arr_orig = np.array(imagem)
+    arr_ero = np.array(img_erodida)
     contorno = arr_orig - arr_ero
-    contorno = np.clip(contorno, 0, 255).astype(np.uint8)
     
     return Image.fromarray(contorno)
 
 def contorno_externo_cinza(imagem):
     img_dilatada = dilatacao_cinza(imagem)
-    arr_dil = np.array(img_dilatada, dtype=np.int16)
-    arr_orig = np.array(imagem, dtype=np.int16) 
+    arr_dil = np.array(img_dilatada)
+    arr_orig = np.array(imagem) 
     contorno = arr_dil - arr_orig
-    contorno = np.clip(contorno, 0, 255).astype(np.uint8)
     
     return Image.fromarray(contorno)
 
 def top_hat_cinza(imagem):
     img_abertura = abertura_cinza(imagem)
-    arr_orig = np.array(imagem, dtype=np.int16)
-    arr_abert = np.array(img_abertura, dtype=np.int16)
+    arr_orig = np.array(imagem)
+    arr_abert = np.array(img_abertura)
     top_hat = arr_orig - arr_abert
-    top_hat = np.clip(top_hat, 0, 255).astype(np.uint8)
     
     return Image.fromarray(top_hat)
 
 def bottom_hat_cinza(imagem):
     img_fechamento = fechamento_cinza(imagem)
-    arr_fech = np.array(img_fechamento, dtype=np.int16)
-    arr_orig = np.array(imagem, dtype=np.int16)
+    arr_fech = np.array(img_fechamento)
+    arr_orig = np.array(imagem)
     bottom_hat = arr_fech - arr_orig
-    bottom_hat = np.clip(bottom_hat, 0, 255).astype(np.uint8)
     
     return Image.fromarray(bottom_hat)
 
