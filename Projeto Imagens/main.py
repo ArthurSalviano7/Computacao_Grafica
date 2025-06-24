@@ -9,6 +9,8 @@ import Transformacoes
 import Equalizacao
 import Operacoes
 import Operadores_morfologicos
+import Morfismo
+import Tab_Transformacoes
 
 global entry_A, entry_Y
 
@@ -67,40 +69,9 @@ def aplicar_filtro(matriz):
         elif filtro_selecionado == "Filtragem Alto Reforço(Hight-Boost)":
             A = float(entry_A.get()) if entry_A.get() else 1.1
             imagem_filtrada = Filtros.filtragem_alto_reforco(imagem, A)
-        elif filtro_selecionado == "Negativo da Imagem":
-            imagem_filtrada = Transformacoes.negativo_da_imagem(imagem)
-        elif filtro_selecionado == "Transformação Logaritmo":
-            A = float(entry_A.get()) if entry_A.get() else 10
-            imagem_filtrada = Transformacoes.logaritmo(imagem, A)
-        elif filtro_selecionado == "Transformação Gamma":
-            C = float(entry_A.get()) if entry_A.get() else 1
-            Y = float(entry_Y.get()) if entry_Y.get() else 1
-            imagem_filtrada = Transformacoes.gamma(imagem, C, Y)
-        elif filtro_selecionado == "Transformação Linear":
-            a = float(entry_A.get()) if entry_A.get() else 1
-            b = float(entry_B.get()) if entry_B.get() else 1
-            imagem_filtrada = Transformacoes.linear(imagem, a, b)
-        elif filtro_selecionado == "Transformação Faixa Dinâmica":
-            w = float(entry_A.get()) if entry_A.get() else 255
-            imagem_filtrada = Transformacoes.faixa_dinamica(imagem, w)
-        elif filtro_selecionado == "Zoom-in":
-            imagem_filtrada = Transformacoes.zoom_in(imagem)
-        elif filtro_selecionado == "Zoom-out":
-            imagem_filtrada = Transformacoes.zoom_out(imagem)
-        elif filtro_selecionado == "Rotacionar Imagem":
-            ang = float(entry_A.get()) if entry_A.get() else 90
-            imagem_filtrada = Transformacoes.rotacionar_imagem(imagem, -ang)
-        elif filtro_selecionado == "Reflexão (flip horizontal)":
-            imagem_filtrada = Transformacoes.flip_horizontal(imagem)
-        elif filtro_selecionado == "Reflexão (flip vertical)":
-            imagem_filtrada = Transformacoes.flip_vertical(imagem)
-        elif filtro_selecionado == "Warping":
-            imagem_filtrada = Transformacoes.warp_losango(imagem)
         else:
             imagem_filtrada = Filtros.aplicar_filtro_personalizado(imagem, matriz_convolucao)
-        
-        
-        
+
         display_image(imagem_filtrada, imagem_processada) #carrega a imagem na janela
 
 def atualizar_matriz_convolucao(event):
@@ -146,49 +117,7 @@ def atualizar_matriz_convolucao(event):
         A_label.grid(row=3, column=0, padx=0, pady=0, sticky="n")
         entry_A = tk.Entry(frame_meio, width=5)
         entry_A.grid(row=4, column=0, padx=0, pady=0, sticky="n")
-    elif filtro_selecionado == "Transformação Logaritmo":
-        A_label = tk.Label(frame_meio, text="A:")
-        A_label.grid(row=3, column=0, padx=0, pady=0, sticky="n")
-        entry_A = tk.Entry(frame_meio, width=5)
-        entry_A.grid(row=4, column=0, padx=0, pady=0, sticky="n")
-    elif filtro_selecionado == "Transformação Gamma":
-        A_label = tk.Label(frame_meio, text="C:")
-        A_label.grid(row=3, column=0, padx=0, pady=0, sticky="n")
-        entry_A = tk.Entry(frame_meio, width=5)
-        entry_A.grid(row=4, column=0, padx=0, pady=0, sticky="n")
-        Y_label = tk.Label(frame_meio, text="Y:")
-        Y_label.grid(row=5, column=0, padx=0, pady=0, sticky="ns")
-        entry_Y = tk.Entry(frame_meio, width=5)
-        entry_Y.grid(row=6, column=0, padx=0, pady=0, sticky="ns")
-    elif filtro_selecionado == "Transformação Linear":
-        A_label = tk.Label(frame_meio, text="a:")
-        A_label.grid(row=3, column=0, padx=0, pady=0, sticky="n")
-        entry_A = tk.Entry(frame_meio, width=5)
-        entry_A.grid(row=4, column=0, padx=0, pady=0, sticky="n")
-        B_label = tk.Label(frame_meio, text="b:")
-        B_label.grid(row=5, column=0, padx=0, pady=0, sticky="ns")
-        entry_B = tk.Entry(frame_meio, width=5)
-        entry_B.grid(row=6, column=0, padx=0, pady=0, sticky="ns")
-    elif filtro_selecionado == "Transformação Faixa Dinâmica":
-        A_label = tk.Label(frame_meio, text="w_target:")
-        A_label.grid(row=3, column=0, padx=0, pady=0, sticky="n")
-        entry_A = tk.Entry(frame_meio, width=5)
-        entry_A.grid(row=4, column=0, padx=0, pady=0, sticky="n")
-    elif filtro_selecionado == "Rotacionar Imagem":
-        A_label = tk.Label(frame_meio, text="angulo:")
-        A_label.grid(row=3, column=0, padx=0, pady=0, sticky="n")
-        entry_A = tk.Entry(frame_meio, width=5)
-        entry_A.grid(row=4, column=0, padx=0, pady=0, sticky="n")
     
-
-
-    if filtro_selecionado != "Transformação Gamma":
-        try:
-            entry_Y.grid_forget()
-            Y_label.grid_forget()
-        except NameError:
-            pass
-
     # Atualizar as Entry widgets com os novos valores da matriz
     for i in range(3):
         for j in range(3):
@@ -212,17 +141,23 @@ def main():
     tab2 = tk.Frame(tab_control)
     tab3 = tk.Frame(tab_control)
     tab4 = tk.Frame(tab_control)
+    tab5 = tk.Frame(tab_control)
+    tab6 = tk.Frame(tab_control)
 
     tab_control.add(tab1, text='Filtros')
     tab_control.add(tab2, text='Equalização')
     tab_control.add(tab3, text='Operações')
     tab_control.add(tab4, text='Operadores Morfológicos')
+    tab_control.add(tab5, text='Deformação')
+    tab_control.add(tab6, text='Transformações')
     
     tab_control.pack(expand=1, fill='both')
 
     Equalizacao.equalizar_lena(tab2)
     Operacoes.mostrar_tela(tab3)
     Operadores_morfologicos.mostrar_tela(tab4)
+    Morfismo.mostrar_tela(tab5)
+    Tab_Transformacoes.mostrar_tela(tab6)
 
     # Frame dentro da aba 'Filtros' para organizar com grid
     frame_filtros = tk.Frame(tab1)
@@ -254,10 +189,7 @@ def main():
     filters = ["Filtro da mediana", "Filtro da Média", "Filtro passa altas básico (Detecção de pontos)", 
                "Filtragem Alto Reforço(Hight-Boost)", "Operador de Roberts", "Operador de Roberts cruzado", 
                "Operador de Sobel", "Operador de Sobel em X", "Operador de Sobel em Y", "Operador de Prewitt", 
-               "Operador de Prewitt em X", "Operador de Prewitt em Y", "Filtro Livre", "Negativo da Imagem",
-               "Transformação Logaritmo", "Transformação Gamma", "Transformação Linear", "Transformação Faixa Dinâmica",
-               "Zoom-in", "Zoom-out", "Rotacionar Imagem", "Reflexão (flip horizontal)", "Reflexão (flip vertical)",
-               "Warping"]
+               "Operador de Prewitt em X", "Operador de Prewitt em Y", "Filtro Livre"]
     filter_menu = ttk.Combobox(frame_meio, textvariable=filtro_val, values=filters, width=40)
     filter_menu.grid(row=1, column=0, padx=10, pady=5, sticky='nsew')
     filter_menu.bind("<<ComboboxSelected>>", atualizar_matriz_convolucao)
