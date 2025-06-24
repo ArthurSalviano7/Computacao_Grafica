@@ -12,6 +12,7 @@ import opengl3Dframe_ponto_de_fuga
 import opengl3Dframe_projecao_isometrica
 import opengl3Dframe_galpao_faces
 import opengl3Dframe_projecao_ortografica
+import opengl2D_heart_simulation
 import opengl2D_reta_circ
 import opengl_frame
 import opengl3D
@@ -38,7 +39,7 @@ def main():
     #tab_control.add(tab2, text='3D - Ponto de Fuga')
     tab_control.add(tab3, text='3D - Isométrica')
     #tab_control.add(tab4, text='3D')
-    #tab_control.add(tab5, text='3D - Ortográfica')
+    tab_control.add(tab5, text='Simulação batimentos coração')
     tab_control.add(tab6, text='Retas e Círculo')
 
     
@@ -49,7 +50,7 @@ def main():
     #opengl3Dframe_ponto_de_fuga.desenhar(tab2)
     opengl3Dframe_projecao_isometrica.desenhar(tab3)
     #opengl3Dframe_galpao_faces.desenhar(tab4)
-    #opengl3Dframe_projecao_ortografica.desenhar(tab5)
+    opengl2D_heart_simulation.desenhar(tab5)
     opengl2D_reta_circ.desenhar(tab6)
 
     root.mainloop()
