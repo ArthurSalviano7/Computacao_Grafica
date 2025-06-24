@@ -13,71 +13,108 @@ import time
 class HeartSimulation(OpenGLFrame):
     def __init__(self, master=None, width=800, height=500, **kwargs):
         super().__init__(master, width=width, height=height, **kwargs)
+        
+        # Define as dimensões da janela de visualização
         self.width = width
         self.height = height
+
+        # Lista que armazenará os pontos do traçado do ECG
         self.points = []
+
+        # Índice do ponto atual a ser desenhado
         self.current_index = 0
+
+        # Tempo em que a simulação começou
         self.start_time = 0
-        self.display_duration = 10  # Segundos
+
+        # Duração total da simulação (em segundos)
+        self.display_duration = 10
+
+        # Flag que indica se a simulação está em execução
         self.is_running = False
+
+        # Variação máxima e mínima para o "batimento"
         self.heartbeat_max = 100
         self.heartbeat_min = 30
     
     
     def initgl(self):
         
+        # Define a cor do fundo como preto
         glClearColor(0.0, 0.0, 0.0, 1.0)
+        
+        # Define que o modo de matriz atual é o de projeção (visualização)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
+        
+        # Projeção ortográfica 2D com base nas dimensões da janela
         gluOrtho2D(0, self.width, 0, self.height)
 
     def create_points(self):
         self.points = []
-        y_base = self.height // 2
-        x = 0
+        y_base = self.height // 2 # Linha base de repouso onde a linha fica quando não há picos de batimento
+        x = 0 # Onde a linha começa a ser desenhada
 
+        # Gera os pontos até atingir a largura da tela
         while x < self.width:
             if len(self.points) % 20 == 0:
-                low = y_base - random.randint(self.heartbeat_min, self.heartbeat_max)
-                high = y_base + random.randint(self.heartbeat_min, self.heartbeat_max)
+                # A cada 20 pontos simula um batimento cardíaco com pico e vale
+                low = y_base - random.randint(self.heartbeat_min, self.heartbeat_max) # Cria um vale com valores aleatótios dentro do intervalo definido
+                high = y_base + random.randint(self.heartbeat_min, self.heartbeat_max) # Cria um pico com valores aleatótios dentro do intervalo definido
+                
+                # Adiciona dois pontos, um de vale e um de pico 10 unidades à dureita no eixo x
                 self.points.append((x, low))
                 x += 10
                 self.points.append((x, high))
             else:
-                self.points.append((x, y_base))
-            x += 10
+                # Caso contrário, desenha ponto na linha base (sem batimento)
+                    self.points.append((x, y_base))
+            x += 10  # Avança no eixo X
 
-        self.current_index = 0
+        self.current_index = 0  # Reinicia o índice
+
         
     def draw_scene(self):
+        # Limpa os buffers de cor e profundidade
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+        # Define projeção ortográfica novamente
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         gluOrtho2D(0, self.width, 0, self.height)
 
+        # Reinicia a matriz de modelo (posição da câmera virtual)
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
 
+        # Se a simulação estiver em execução, desenha a linha
         if self.is_running:
-            glColor3f(0, 1, 0)
+            glColor3f(0, 1, 0)  # Verde
+
             glBegin(GL_LINE_STRIP)
             for i in range(self.current_index):
                 x, y = self.points[i]
-                glVertex2f(x, y)
+                glVertex2f(x, y)  # Adiciona vértice
             glEnd()
 
+            # Avança para o próximo ponto
             self.current_index += 1
+
+            # Condição de parada: tempo esgotado ou fim dos pontos
             if self.current_index >= len(self.points) or time.time() - self.start_time >= self.display_duration:
                 self.is_running = False
                 self.current_index = 0
-                self.create_points()
+                self.create_points()  # Gera novo conjunto para próxima execução
 
+        # Atualiza a janela OpenGL (double buffering)
         self.tkSwapBuffers()
+
+        # Se ainda estiver rodando, agenda o próximo frame
         if self.is_running:
-            self.after(33, self.redraw)
+            self.after(33, self.redraw)  # ~30 FPS
 
     def redraw(self):
-        self.draw_scene()
+        self.draw_scene() # Redesenha a cena
 
 
     def start_simulation(self, duration=None):
@@ -87,12 +124,13 @@ class HeartSimulation(OpenGLFrame):
             else:
                 self.display_duration = 10  # Valor padrão
         except ValueError:
-            self.display_duration = 10
+            self.display_duration = 10 # Fallback se valor inválido
 
-        self.create_points()
-        self.start_time = time.time()
-        self.is_running = True
-        self.redraw()
+        self.create_points()  # Gera os dados do ECG
+        self.start_time = time.time()  # Marca o tempo inicial
+        self.is_running = True  # Liga a simulação
+        self.redraw()  # Começa o desenho
+
         
 
 def desenhar(tab5):
@@ -107,20 +145,6 @@ def desenhar(tab5):
 
     ogl_ecg = HeartSimulation(frame_right, width=800, height=600)
     ogl_ecg.pack(fill="both", expand=True)
-
-    
-    # Atualização da janela
-    
-    # Inserir tamanho da janela mundo
-    entry_width = ctk.CTkEntry(frame_left, placeholder_text="Largura", width=50)
-    entry_width.grid(row=0, column=0, pady=1, padx=1)
-
-    entry_height = ctk.CTkEntry(frame_left, placeholder_text="Altura", width=50)
-    entry_height.grid(row=0, column=1, pady=1, padx=1)
-
-    # Botão para definir janela mundo
-    btn_janela_mundo = tk.Button(frame_left, text="Def. Janela\nMundo", command=lambda: ogl_ecg.definir_janela_mundo(int(entry_width.get()), int(entry_height.get())))
-    btn_janela_mundo.grid(row=0, column=2, pady=3, padx=2)
 
     # Caixa de entrada para o tempo da simulação
     entry_time = ctk.CTkEntry(frame_left, placeholder_text="Tempo simulação (s)", width=100)
