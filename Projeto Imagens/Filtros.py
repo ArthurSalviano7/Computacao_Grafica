@@ -14,19 +14,19 @@ def aplicar_filtro_personalizado(imagem, matriz_convolucao):
     img_array = np.array(imagem)
 
     # Aplicar o filtro personalizado
-    for y in range(1, height - 1):
-        for x in range(1, width - 1):
+    for x in range(1, height - 1):
+        for y in range(1, width - 1):
             # Calcular o produto escalar entre a vizinhança e a mascara
             # Extrair a vizinhança 3x3 do pixel atual (y-1 até y+2 seleciona as 
             # linhas 'y-1', 'y' e 'y+1' da matriz, o mesmo acontece com as colunas(x-1 até x+2)) resulta em uma matriz 3x3 com pixel no centro
-            vizinhanca = img_array[y - 1:y + 1 + 1,
-                                     x - 1:x + 1 + 1]
+            vizinhanca = img_array[x - 1:x + 2,
+                                     y - 1:y + 2]
             filtered_value = int(np.sum(vizinhanca * matriz_convolucao))
 
             # Limitar o valor resultante ao intervalo de 0 a 255 (Truncamento)
             filtered_value = np.clip(filtered_value, 0, 255)
 
-            imagem_filtrada[y, x] = filtered_value
+            imagem_filtrada[x, y] = filtered_value
 
     # Converter a matriz filtrada de volta para imagem PIL
     imagem_filtrada_convertida = Image.fromarray(imagem_filtrada.astype('uint8'), 'L')
@@ -54,16 +54,16 @@ def filtro_media(imagem):
     matriz_convolucao = np.ones((3, 3)) / 9 
 
     # Aplicar o filtro
-    for y in range(1, height - 1):
-        for x in range(1, width - 1):
+    for x in range(1, height - 1):
+        for y in range(1, width - 1):
             # Calcular a média da vizinhança usando a mascara
-            vizinhanca = img_array[y - 1:y + 2, x - 1:x + 2]
+            vizinhanca = img_array[x - 1:x + 2, y - 1:y + 2]
             filtered_value = round(np.sum(vizinhanca * matriz_convolucao)) # arredondar o resultado da convolucao
 
             # Limitar o valor resultante ao intervalo de 0 a 255
             filtered_value = np.clip(filtered_value, 0, 255)
 
-            imagem_filtrada[y, x] = filtered_value
+            imagem_filtrada[x, y] = filtered_value
     
     # Converter a matriz filtrada de volta para imagem PIL
     imagem_filtrada_convertida = Image.fromarray(imagem_filtrada.astype('uint8'), 'L')
@@ -83,11 +83,11 @@ def filtro_mediana(imagem):
     img_array = np.array(imagem)
 
     # Aplicar o filtro da mediana
-    for y in range(1, height - 1):
-        for x in range(1, width - 1):
+    for x in range(1, height - 1):
+        for y in range(1, width - 1):
             # Extrair a vizinhança 3x3 do pixel atual (y-1 até y+2 seleciona as 
             # linhas 'y-1', 'y' e 'y+1' da matriz, o mesmo acontece com as colunas(x-1 até x+2))
-            vizinhanca = img_array[y - 1:y + 2, x - 1:x + 2]
+            vizinhanca = img_array[x - 1:x + 2, y - 1:y + 2]
             
             # Calcular a mediana da vizinhança
             mediana = np.median(vizinhanca)
@@ -95,7 +95,7 @@ def filtro_mediana(imagem):
             mediana = np.clip(mediana, 0, 255) # Limitar o valor resultante ao intervalo de 0 a 255
             
             # Atribuir a mediana ao pixel correspondente na imagem filtrada
-            imagem_filtrada[y, x] = mediana
+            imagem_filtrada[x, y] = mediana
 
     # Converter a matriz filtrada de volta para imagem PIL
     imagem_filtrada_convertida = Image.fromarray(imagem_filtrada.astype('uint8'), 'L')
@@ -124,25 +124,25 @@ def operador_prewitt(imagem):
                [-1, 0, 1],
                [-1, 0, 1]]
 
-    for y in range(1, height - 1):
-        for x in range(1, width - 1):
+    for x in range(1, height - 1):
+        for y in range(1, width - 1):
             # Operador de prewitt em X:
-            vizinhanca_x = img_array_x[y - 1:y + 2, x - 1:x + 2]
+            vizinhanca_x = img_array_x[x - 1:x + 2, y - 1:y + 2]
             
             filtered_value_x = round(np.sum(vizinhanca_x * matriz_x))
             filtered_value_x = np.clip(filtered_value_x, 0, 255) #Truncamento
             # Atribuir ao pixel correspondente na imagem filtrada
-            imagem_filtrada_em_x[y, x] = filtered_value_x
+            imagem_filtrada_em_x[x, y] = filtered_value_x
             
 
             # Operador de prewitt em Y:
-            vizinhanca_y = img_array_x[y - 1:y + 2, x - 1:x + 2]
+            vizinhanca_y = img_array_x[x - 1:x + 2, y - 1:y + 2]
             
             filtered_value_y = round(np.sum(vizinhanca_y * matriz_y))
             filtered_value_y = np.clip(filtered_value_y, 0, 255)
             
             # Atribuir ao pixel correspondente na imagem filtrada
-            imagem_filtrada_em_y[y, x] = filtered_value_y
+            imagem_filtrada_em_y[x, y] = filtered_value_y
 
     #Soma o resultado das duas operações
     imagem_filtrada = Operacoes.soma(imagem_filtrada_em_x, imagem_filtrada_em_y)
@@ -172,25 +172,25 @@ def operador_sobel(imagem):
                [-2, 0, 2],
                [-1, 0, 1]]
 
-    for y in range(1, height - 1):
-        for x in range(1, width - 1):
+    for x in range(1, height - 1):
+        for y in range(1, width - 1):
             # Operador de prewitt em X:
-            vizinhanca_x = img_array_x[y - 1:y + 2, x - 1:x + 2]
+            vizinhanca_x = img_array_x[x - 1:x + 2, y - 1:y + 2]
             
             filtered_value_x = round(np.sum(vizinhanca_x * matriz_x))
             filtered_value_x = np.clip(filtered_value_x, 0, 255) #Truncamento
             # Atribuir ao pixel correspondente na imagem filtrada
-            imagem_filtrada_em_x[y, x] = filtered_value_x
+            imagem_filtrada_em_x[x, y] = filtered_value_x
             
 
             # Operador de prewitt em Y:
-            vizinhanca_y = img_array_y[y - 1:y + 2, x - 1:x + 2]
+            vizinhanca_y = img_array_y[x - 1:x + 2, y - 1:y + 2]
             
             filtered_value_y = round(np.sum(vizinhanca_y * matriz_y))
             filtered_value_y = np.clip(filtered_value_y, 0, 255)
             
             # Atribuir ao pixel correspondente na imagem filtrada
-            imagem_filtrada_em_y[y, x] = filtered_value_y
+            imagem_filtrada_em_y[x, y] = filtered_value_y
 
     #Soma o resultado das duas operações
     imagem_filtrada = Operacoes.soma(imagem_filtrada_em_x, imagem_filtrada_em_y)
@@ -219,22 +219,22 @@ def operador_roberts(imagem):
                          [0,  1, -1],
                          [0,  0, 0]])
 
-    for y in range(1, height - 1):
-        for x in range(1, width - 1):
+    for x in range(1, height - 1):
+        for y in range(1, width - 1):
             # Extrair a vizinhança 3x3
-            vizinhanca = img_array[y - 1:y + 2, x - 1:x + 2]
+            vizinhanca = img_array[x - 1:x + 2, y - 1:y + 2]
             
             filtered_value_x = round(np.sum(vizinhanca * matriz_x))
             filtered_value_x = np.clip(filtered_value_x, 0, 255) #Truncamento
             # Atribuir ao pixel correspondente na imagem filtrada
-            imagem_filtrada_em_x[y, x] = filtered_value_x
+            imagem_filtrada_em_x[x, y] = filtered_value_x
 
             
             filtered_value_y = round(np.sum(vizinhanca * matriz_y))
             filtered_value_y = np.clip(filtered_value_y, 0, 255)
             
             # Atribuir ao pixel correspondente na imagem filtrada
-            imagem_filtrada_em_y[y, x] = filtered_value_y
+            imagem_filtrada_em_y[x, y] = filtered_value_y
 
     #Soma o resultado das duas operações
     imagem_filtrada = Operacoes.soma(imagem_filtrada_em_x, imagem_filtrada_em_y)
@@ -263,21 +263,21 @@ def operador_roberts_cruzado(imagem):
                          [0,  0,  1],
                          [0, -1,  0]])
 
-    for y in range(1, height - 1):
-        for x in range(1, width - 1):
+    for x in range(1, height - 1):
+        for y in range(1, width - 1):
             # Extrair a vizinhança 3x3
-            vizinhanca = img_array[y - 1:y + 2, x - 1:x + 2]
+            vizinhanca = img_array[x - 1:x + 2, y - 1:y + 2]
             
             filtered_value_x = round(np.sum(vizinhanca * matriz_x))
             filtered_value_x = np.clip(filtered_value_x, 0, 255) #Truncamento
             # Atribuir ao pixel correspondente na imagem filtrada
-            imagem_filtrada_em_x[y, x] = filtered_value_x
+            imagem_filtrada_em_x[x, y] = filtered_value_x
             
             filtered_value_y = round(np.sum(vizinhanca * matriz_y))
             filtered_value_y = np.clip(filtered_value_y, 0, 255)
             
             # Atribuir ao pixel correspondente na imagem filtrada
-            imagem_filtrada_em_y[y, x] = filtered_value_y
+            imagem_filtrada_em_y[x, y] = filtered_value_y
 
     #Soma o resultado das duas operações
     imagem_filtrada = Operacoes.soma(imagem_filtrada_em_x, imagem_filtrada_em_y)
@@ -302,15 +302,15 @@ def filtragem_alto_reforco(imagem, A):
              [-1, -1,  -1]]
 
     # Aplicar o filtro
-    for y in range(1, height - 1):
-        for x in range(1, width - 1):
+    for x in range(1, height - 1):
+        for y in range(1, width - 1):
             # Extrair a vizinhança 3x3 do pixel atual (y-1 até y+2 seleciona as 
             # linhas 'y-1', 'y' e 'y+1' da matriz, o mesmo acontece com as colunas(x-1 até x+2))
-            vizinhanca = img_array[y - 1:y + 2, x - 1:x + 2]
+            vizinhanca = img_array[x - 1:x + 2, y - 1:y + 2]
             
             filtered_value = round(np.sum(vizinhanca * matriz))
             
-            imagem_filtrada[y, x] = filtered_value
+            imagem_filtrada[x, y] = np.clip(filtered_value, 0, 255)
 
     # Converter a matriz filtrada de volta para imagem PIL
     imagem_filtrada_convertida = Image.fromarray(imagem_filtrada.astype('uint8'), 'L')
