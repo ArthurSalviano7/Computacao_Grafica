@@ -158,7 +158,7 @@ def mostrar_tela(tab3):
     frame_meio = tk.Frame(frame_filtros)
     frame_meio.grid(row=0, column=1, rowspan=5, columnspan=7, pady=10)
 
-    # Texto antes do seletor de filtros
+  
     filter_label = tk.Label(frame_meio, text="Selecione um Filtro:")
     filter_label.grid(row=0, column=0, padx=10, pady=5, sticky='w')
 
@@ -171,6 +171,6 @@ def mostrar_tela(tab3):
     filter_menu.grid(row=1, column=0, padx=10, pady=5, sticky='nsew')
 
     
-    # Botão para aplicar o filtro
+ 
     apply_button = tk.Button(frame_meio, text="Aplicar Filtro", command=lambda: aplicar_operacao(imagem, imagem2))
     apply_button.grid(row=2, column=0, padx=10, pady=0)
