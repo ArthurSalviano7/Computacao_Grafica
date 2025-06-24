@@ -51,7 +51,7 @@ def realizar_operacao(image1, image2, operacao):
     return result_image
 
 def aplicar_operacao(imagem1, imagem2):
-    # Lógica para atualizar os valores na matriz de convolução com base no filtro selecionado
+     # Lógica para atualizar os valores na matriz de convolução com base no filtro selecionado
     operacao_selecionada = filtro_val.get()
 
     if operacao_selecionada == "Soma":
@@ -62,8 +62,57 @@ def aplicar_operacao(imagem1, imagem2):
         img_resultado = realizar_operacao(imagem1, imagem2, "Multiplicação")
     elif operacao_selecionada == "Divisão":
         img_resultado = realizar_operacao(imagem1, imagem2, "Divisão")
+    elif operacao_selecionada == "AND lógico":
+        img_resultado, _, _ = operacoes_logicas(imagem1, imagem2)
+    elif operacao_selecionada == "OR lógico":
+        _, img_resultado, _ = operacoes_logicas(imagem1, imagem2)
+    elif operacao_selecionada == "XOR lógico":
+        _, _, img_resultado = operacoes_logicas(imagem1, imagem2)
+    else:
+        return  # Nenhuma operação válida
 
     display_image(img_resultado, resultado_label)
+
+
+def operacoes_logicas(imagem1, imagem2):
+    imagem1_array = np.array(imagem1)
+    imagem2_array = np.array(imagem2)
+
+    soma1 = np.sum(imagem1_array)
+    soma2 = np.sum(imagem2_array)
+
+    # Calcular a média de cada imagem
+    media1 = soma1 / (imagem1_array.shape[0] * imagem1_array.shape[1])
+    media2 = soma2 / (imagem2_array.shape[0] * imagem2_array.shape[1])
+
+    # Binarizar com base na própria média
+    imagem1_bin = (imagem1_array > media1).astype(np.uint8) * 255
+    imagem2_bin = (imagem2_array > media2).astype(np.uint8) * 255
+
+    altura, largura = imagem1_bin.shape
+    and_result = np.zeros((altura, largura), dtype=np.uint8)
+    or_result  = np.zeros((altura, largura), dtype=np.uint8)
+    xor_result = np.zeros((altura, largura), dtype=np.uint8)
+
+        # Loop pixel a pixel
+    for y in range(altura):
+        for x in range(largura):
+            p1 = 1 if imagem1_bin[y][x] > 0 else 0
+            p2 = 1 if imagem2_bin[y][x] > 0 else 0
+
+            and_result[y][x] = (p1 & p2) * 255
+            or_result[y][x]  = (p1 | p2) * 255
+            xor_result[y][x] = (p1 ^ p2) * 255
+
+    # Converte para imagens PIL
+    #bin_img1 = Image.fromarray(imagem1_bin)
+    #bin_img2 = Image.fromarray(imagem2_bin)
+    and_img = Image.fromarray(and_result)
+    or_img = Image.fromarray(or_result)
+    xor_img = Image.fromarray(xor_result)
+
+    return and_img, or_img, xor_img
+
 
 
 
@@ -72,9 +121,23 @@ def mostrar_tela(tab3):
 
     imagem2 = Image.open('./imagens/airplane.pgm')
     # Frame dentro da aba 'Filtros' para organizar com grid
-     # Frame dentro da aba 'Filtros' para organizar com grid
     frame_filtros = tk.Frame(tab3)
     frame_filtros.pack(expand=1, fill='both', padx=10, pady=10)
+
+    #bin1, bin2, and_img, or_img, xor_img = operacoes_logicas(imagem, imagem2)
+
+    #bin_label1 = tk.Label(frame_filtros)
+    #bin_label1.grid(row=1, column=0)
+
+    #bin_label2 = tk.Label(frame_filtros)
+    #bin_label2.grid(row=1, column=8)
+
+
+# Mostrando as binarizadas
+    #display_image(bin1, bin_label1)
+    #display_image(bin2, bin_label2)
+
+
 
     # Labels para exibir as imagens
     imagem_1_label = tk.Label(frame_filtros)
@@ -95,18 +158,19 @@ def mostrar_tela(tab3):
     frame_meio = tk.Frame(frame_filtros)
     frame_meio.grid(row=0, column=1, rowspan=5, columnspan=7, pady=10)
 
-    # Texto antes do seletor de filtros
+  
     filter_label = tk.Label(frame_meio, text="Selecione um Filtro:")
     filter_label.grid(row=0, column=0, padx=10, pady=5, sticky='w')
 
     # Seletor de filtros
     global filtro_val
     filtro_val = tk.StringVar(value="Soma")
-    filters = ["Soma", "Subtração", "Divisão", "Multiplicação"]
+    filters = ["Soma", "Subtração", "Divisão", "Multiplicação", 
+           "AND lógico", "OR lógico", "XOR lógico"]
     filter_menu = ttk.Combobox(frame_meio, textvariable=filtro_val, values=filters, width=40)
     filter_menu.grid(row=1, column=0, padx=10, pady=5, sticky='nsew')
 
     
-    # Botão para aplicar o filtro
+ 
     apply_button = tk.Button(frame_meio, text="Aplicar Filtro", command=lambda: aplicar_operacao(imagem, imagem2))
     apply_button.grid(row=2, column=0, padx=10, pady=0)
