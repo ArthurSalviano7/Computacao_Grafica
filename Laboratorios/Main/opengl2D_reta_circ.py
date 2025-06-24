@@ -28,23 +28,21 @@ class Reta_circ(OpenGLFrame):
         self.redraw()
 
     def draw_scene(self):
-        """Redesenha a cena OpenGL para que os objetos fiquem na tela"""
+        """Redesenha a cena OpenGL para que os objetos etc. fiquem na tela"""
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
 
         #Definindo view port
-        viewport_size = min(self.vp_width, self.vp_height)
-        half = viewport_size // 2
-        gluOrtho2D(-half, half, -half, half)
-        
+        gluOrtho2D(-self.vp_width/2, self.vp_width/2, -self.vp_height/2, self.vp_height/2)
+
          # --- Configuração da CÂMERA/MODELO para 2D ---
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity() # Resetar a matriz MODELVIEW para cada frame
-        
-        self.draw_axes(viewport_size, viewport_size) #Desenhar eixos X e Y
 
-        # Desenha os pontos armazenados na lista
+        self.draw_axes(self.vp_width, self.vp_height) #Desenhar eixos X e Y
+
+        # Desenha os pontos armazenados na listaAdd commentMore actions
         glBegin(GL_POINTS)
         glColor3f(1.0, 0, 0)
         for point in self.pontos:
@@ -68,32 +66,80 @@ class Reta_circ(OpenGLFrame):
         glEnd()
 
     def DDA(self, x1, y1, x2, y2):
-        dx = x2 - x1
-        dy = y2 - y1
+        dx = x2 - x1 # Variação de x
+        dy = y2 - y1 # Variação de y
 
+        # Número de passos necessários para desenhar a reta
         length = max(abs(dx), abs(dy))
+        
+        # Caso dx = dy = 0, a reta é só um ponto
+        if length == 0:
+            return [(round(x1), round(y1))] 
 
-        if length != 0:
-            x_increment = dx / length
-            y_increment = dy / length
-        else:
-            x_increment = 0
-            y_increment = 0
+        # Incrementos de x e y
+        x_increment = dx / length
+        y_increment = dy / length
 
-        x = x1
-        y = y1
+        x, y = x1, y1
+        self.pontos.append((round(x), round(y)))  # Adiciona o primeiro ponto
 
-        self.pontos.append((round(x), round(y)))
-
-
-        while(x < x2):
+        # Loop de desenha a reta
+        while round(x) != round(x2) or round(y) != round(y2):
             x += x_increment
             y += y_increment
             self.pontos.append((round(x), round(y)))
-        
+      
         self.redraw() # Sempre atualizar cena após alteração
 
-        return ((x, y))
+        return ((x, y))   
+    
+    def pontoMedio(self, x1, y1, x2, y2):
+
+        # Garante que a reta sempre vá da esquerda para a direita (em x)
+        if x1 > x2:
+            x1, y1, x2, y2 = x2, y2, x1, y1
+
+        dx = x2 - x1  # Diferença em x
+        dy = y2 - y1  # Diferença em y
+
+        # Verifica se a reta é "íngreme" (|dy| > |dx|) e se for, inverte x e y para tratar como uma reta menos inclinada
+        if abs(dy) > abs(dx):
+            x1, y1, x2, y2 = y1, x1, y2, x2  # Troca coordenadas
+            steep = True  # Marca que a reta foi invertida
+        else:
+            steep = False  # Não foi necessário inverter
+
+        # Recalcula as diferenças após possível troca
+        dx = abs(x2 - x1)
+        dy = abs(y2 - y1)
+
+        # Inicializa o parâmetro de decisão do algoritmo de ponto médio
+        d = 2 * dy - dx
+        incE = 2 * dy           # Incremento quando escolhe o pixel do Leste
+        incNE = 2 * (dy - dx)   # Incremento quando escolhe o pixel do Nordeste
+
+        x, y = x1, y1  # Começa a desenhar do ponto inicial
+
+        # Determina se o y deve subir (+1) ou descer (-1) conforme direção da reta
+        step_y = 1 if y2 > y1 else -1
+
+        # Laço principal que percorre todos os pixels da reta
+        for _ in range(dx + 1):
+            # Adiciona o ponto à lista, invertendo se necessário
+            self.pontos.append((y, x) if steep else (x, y))
+
+            # Atualiza o valor de d e escolhe o próximo ponto
+            if d <= 0:
+                d += incE  # Move para o pixel do Leste
+            else:
+                d += incNE  # Move para o pixel do Nordeste
+                y += step_y  # Altera o y conforme a direção da reta
+
+            x += 1  # Sempre avança em x
+
+        self.redraw() # Sempre atualizar cena após alteração
+
+        return ((x, y))   
 
     def pontoCirculo(self, x, y):
         self.pontos.append((x, y))
@@ -261,8 +307,12 @@ def desenhar(tab6):
     entry_y2.grid(row=4, column=1, padx=5)
 
     # Botão para desenhar reta (DDA)
-    btn_desenhar_circulo = tk.Button(frame_left, text="Desenhar reta", command=lambda: ogl_frame_reta_circ.DDA(int(entry_x1.get()), int(entry_y1.get()), int(entry_x2.get()), int(entry_y2.get())))
-    btn_desenhar_circulo.grid(row=4, column=2)
+    btn_desenhar_reta_dda = tk.Button(frame_left, text="Desenhar reta(DDA)", command=lambda: ogl_frame_reta_circ.DDA(int(entry_x1.get()), int(entry_y1.get()), int(entry_x2.get()), int(entry_y2.get())))
+    btn_desenhar_reta_dda.grid(row=4, column=2)
+    
+    # Botão para desenhar a reta (ponto médio)
+    btn_desenhar_reta_pm = tk.Button(frame_left, text="Desenhar reta(P.M)", command=lambda: ogl_frame_reta_circ.pontoMedio(int(entry_x1.get()), int(entry_y1.get()), int(entry_x2.get()), int(entry_y2.get())))
+    btn_desenhar_reta_pm.grid(row=5, column=2)
 
     # Entradas Elipse:
     entry_a = ctk.CTkEntry(frame_left, placeholder_text="a", width=50)
