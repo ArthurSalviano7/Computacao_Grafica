@@ -9,10 +9,10 @@ def dilatacao_cinza(imagem):
     nova_imagem = Image.new("L", (largura, altura))
     novos_pixels = nova_imagem.load()
 
-    for y in range(1, altura - 1):  # Evita bordas
+    for y in range(1, altura - 1):
         for x in range(1, largura - 1):
             max_valor = -float('inf')  
-            for j in range(-1, 2):  # Percorre a vizinhança 3x3
+            for j in range(-1, 2):
                 for i in range(-1, 2):
                     valor_somado = pixels[x + i, y + j] + 1  
                     if valor_somado > max_valor:
@@ -20,8 +20,6 @@ def dilatacao_cinza(imagem):
             novos_pixels[x, y] = max_valor
 
     return nova_imagem
-
-from PIL import Image
 
 def erosao_cinza(imagem):
     largura, altura = imagem.size
