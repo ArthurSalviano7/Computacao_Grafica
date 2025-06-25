@@ -116,12 +116,6 @@ class AppOgl(OpenGLFrame):
         glVertex3f(0.0, height/2, 0.0)
         glEnd()
 
-    def draw_pixel(self, dc_x, dc_y):
-        glBegin(GL_POINTS)
-        glColor3f(1.0, 1.0, 1.0)
-        glVertex2f(dc_x, dc_y) 
-        glEnd()
-
     def DDA(self, x0, y0, xEnd, yEnd):
         dx = xEnd - x0
         dy = yEnd - y0
@@ -138,15 +132,12 @@ class AppOgl(OpenGLFrame):
             self.points.append((x, y))
             #self.points.append(round(x), round(y))
         
-        
     #Método para desenhar quadrado na origem, usa o método DDA
     def square_points(self, size):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) # Quando desenhar novo quadrado, limpa a tela antes
         self.points = []
         self.square_points_list = []
 
-        x = round(size)/2
-        y = round(size)/2
         self.DDA(0, 0, size, 0) # Ex: Desenha reta do ponto (0, 0) a (50, 0)
         self.DDA(size, 0, size, size)
         self.DDA(size, size, 0, size)
@@ -202,7 +193,7 @@ class AppOgl(OpenGLFrame):
             self.compose_list.append(["Escala", sx, sy])
             self._log_message(f"'Escala (Sx={sx}, Sy={sy})' adicionada.")
         else:
-            tx, ty = self.verificar_se_fora_da_orig() 
+            tx, ty = self.verificar_se_fora_da_orig() # Retorna qual o deslocamento se estiver fora
 
             if tx or ty:
                 self._log_message(f"\nObjeto fora da origem:")
@@ -389,7 +380,7 @@ class AppOgl(OpenGLFrame):
     
     def exibir_viewport_pixels(self):
         """
-        Calcula e exibe as coordenadas de pixel dos vértices do cubo em relação à tela do dispositivo
+        Calcula e exibe as coordenadas de pixel do objeto em relação à tela do dispositivo
         no log principal. Abre uma janela de simulação MENOR que representa a tela do dispositivo
         e desenha a localização do canvas OpenGL e dos pontos do objeto dentro dela, mantendo a proporção.
         """
@@ -419,7 +410,7 @@ class AppOgl(OpenGLFrame):
         # --- CALCULAR ESCALA PARA A JANELA DE SIMULAÇÃO ---
         # Definimos um tamanho MÁXIMO para a janela de simulação, por exemplo, 800 pixels de largura
         max_sim_width = 800
-        max_sim_height = 600 # Para telas muito largas/altas
+        max_sim_height = 600 
 
         # Calcula o fator de escala para manter a proporção da tela real
         scale_factor = min(max_sim_width / screen_width_real, max_sim_height / screen_height_real)
@@ -436,7 +427,6 @@ class AppOgl(OpenGLFrame):
         pixel_canvas.pack(fill="both", expand=True)
 
         # --- Rótulo para exibir as coordenadas (fixo no topo do Canvas, sem background branco) ---
-        # Posicionamos o label fixo no topo-esquerda do canvas para não interferir nos desenhos
         coords_label = tk.Label(pixel_canvas, text=f"Janela do Dispositivo: {screen_width_real} x {screen_height_real}\n", 
                                 justify=tk.LEFT, anchor="nw", bg="lightgray", font=("Consolas", 10))
         coords_label.place(x=10, y=10) # Posição absoluta dentro do pixel_canvas

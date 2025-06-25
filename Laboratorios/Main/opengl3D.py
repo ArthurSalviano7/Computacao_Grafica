@@ -14,6 +14,7 @@ from Transformações import Escala
 from Transformações import Cisalhamento
 from Transformações import Reflexao
 from Transformações import ReflexaoQualquer
+from Recorte import Cohen_sutherland
 
 '''Desenho do galpão e câmera configurada para ver todas as faces ao mesmo tempo'''
 class opengl3D(OpenGLFrame):
@@ -22,6 +23,9 @@ class opengl3D(OpenGLFrame):
         
         self.message_text_widget = message_text_widget # Salva a referência ao widget
         super().__init__(master, **kw)
+
+        self.last_proj_matrix = np.identity(4) # Inicialize matrizes do openGL
+        self.last_modelview_matrix = np.identity(4)
 
         self.cube_vertices = self.criar_vertices_cubo(50) # Lista de pontos para armazenar os vértices do cubo
         self.rotation_angle_y = 0.0  # Variável para o ângulo de rotação Y (câmera)
@@ -43,6 +47,10 @@ class opengl3D(OpenGLFrame):
         self.vp_height = self.winfo_reqheight()
         self.vp_Zaxis = 800 # Valor default para eixo Z
         print("width x height: ", self.vp_width, "x", self.vp_height)
+
+        # Salvar as matrizes iniciais
+        self.last_proj_matrix = glGetDoublev(GL_PROJECTION_MATRIX)
+        self.last_modelview_matrix = glGetDoublev(GL_MODELVIEW_MATRIX)
 
         self.points = []  # Lista de pontos para armazenar o desenho
         self.redraw()
@@ -120,7 +128,8 @@ class opengl3D(OpenGLFrame):
         print("Lista: ", self.compose_list)
         # Desenhar os objetos da cena
         self.desenhar_eixos(self.vp_width, self.vp_height, self.vp_Zaxis)
-        self.desenhar_cubo()
+        #self.desenhar_cubo()
+        self.desenhar_cubo_DDA()
         
         # Força a troca de buffers e atualização na tela
         self.tkSwapBuffers()
@@ -143,27 +152,6 @@ class opengl3D(OpenGLFrame):
         glVertex3f(0, 0, sizeZ)
         glEnd()
 
-    def desenhar_cubo(self):
-        """Desenha o cubo a partir das arestas definidas"""
-        vertices = self.cube_vertices
-        arestas = [
-            (0, 1), (1, 2), (2, 3), (3, 0), 
-            (4, 5), (5, 6), (6, 7), (7, 4), 
-            (0, 4), (1, 5), (2, 6), (3, 7)
-        ]
-
-        glBegin(GL_LINES)
-        glColor3f(0, 0, 0)
-        for i, j in arestas:
-            # Pega X, Y, Z de cada vértice, IGNORANDO a 4ª coordenada (w)
-            v1_xyz = vertices[i][:3]
-            v2_xyz = vertices[j][:3]
-                
-            glVertex3fv(v1_xyz) # Passa apenas o vetor (x,y,z) de 3 componentes
-            glVertex3fv(v2_xyz)
-        glEnd()
-    
-
     def desenhar_cubo_DDA(self):
         vertices = self.cube_vertices
         arestas_indices = [
@@ -172,20 +160,20 @@ class opengl3D(OpenGLFrame):
             (0, 4), (1, 5), (2, 6), (3, 7)  # Conectores
         ]
 
-        # Use GL_POINTS para desenhar cada ponto gerado pelo DDA
+        # Usa GL_POINTS para desenhar cada ponto gerado pelo DDA
         glBegin(GL_POINTS)
         glColor3f(0, 0, 0) # Cor preta para as arestas
 
         for i, j in arestas_indices:
-            p1 = vertices[i]
-            p2 = vertices[j]
+            p1 = vertices[i][:3]
+            p2 = vertices[j][:3]
             
             # Gerar pontos da linha usando DDA 3D
             line_points = self.DDA3D(p1, p2)
             
             # Desenhar cada ponto da linha
             for point in line_points:
-                glVertex3f(point[0], point[1], point[2])
+                glVertex3f(point[0], point[1], point[2]) # Desenha pixel x, y, z
         glEnd()
     
     def DDA3D(self, p1, p2):
@@ -357,6 +345,169 @@ class opengl3D(OpenGLFrame):
         text_widget.see(tk.END) # Rola para o final para mostrar a nova mensagem
         text_widget.config(state="disabled") # Desabilita novamente para evitar edição pelo usuário
 
+    def exibir_viewport_pixels(self):
+        """
+        Calcula e exibe as coordenadas de pixel do objeto em relação à tela do dispositivo
+        no log principal. Abre uma janela de simulação MENOR que representa a tela do dispositivo
+        e desenha a localização do canvas OpenGL e dos pontos do objeto dentro dela, mantendo a proporção.
+        """
+        self._log_message("Abrindo janela de simulação da Viewport (3D)...")
+
+        # --- Parâmetros da Janela do Mundo (OpenGL gluOrtho2D) ---
+        # glOrtho(-self.vp_width/2, self.vp_width/2, -self.vp_height/2, self.vp_height/2, -self.vp_Zaxis/2, self.vp_Zaxis/2)
+        x_w_min = -self.vp_width / 2
+        x_w_max = self.vp_width / 2
+        y_w_min = -self.vp_height / 2
+        y_w_max = self.vp_height / 2
+        z_w_min = -self.vp_Zaxis / 2
+        z_w_max = self.vp_Zaxis / 2
+
+        # --- Parâmetros do seu Canvas OpenGL em Pixels (largura/altura atual) ---
+        canvas_width_pixels = self.winfo_width()
+        canvas_height_pixels = self.winfo_height()
+        
+        # --- Posição ABSOLUTA do Canvas OpenGL na Tela do Monitor ---
+        ogl_canvas_x_on_screen = self.winfo_rootx() 
+        ogl_canvas_y_on_screen = self.winfo_rooty() 
+
+        # --- Criar a nova janela Tkinter (simula a tela do monitor) ---
+        viewport_window = tk.Toplevel(self.master)
+        viewport_window.title("Simulação Viewport (Pixels do Dispositivo)")
+        
+        screen_width_real = viewport_window.winfo_screenwidth()
+        screen_height_real = viewport_window.winfo_screenheight()
+
+        # --- CALCULAR ESCALA PARA A JANELA DE SIMULAÇÃO ---
+        max_sim_width = 800
+        max_sim_height = 600
+
+        scale_factor = min(max_sim_width / screen_width_real, max_sim_height / screen_height_real)
+        
+        sim_window_width = int(screen_width_real * scale_factor)
+        sim_window_height = int(screen_height_real * scale_factor)
+
+        viewport_window.geometry(f"{sim_window_width}x{sim_window_height}+100+100")
+        viewport_window.resizable(False, False)
+        
+        # --- Canvas para desenhar os elementos simulados (o "monitor") ---
+        pixel_canvas = tk.Canvas(viewport_window, width=sim_window_width, height=sim_window_height, 
+                                 bg="lightgray", bd=0, highlightbackground="gray") 
+        pixel_canvas.pack(fill="both", expand=True)
+
+        # --- Rótulo para exibir as coordenadas ---
+        coords_label = tk.Label(pixel_canvas, text=f"Janela do Dispositivo: {screen_width_real} x {screen_height_real}\n", 
+                                 justify=tk.LEFT, anchor="nw", bg="lightgray", font=("Consolas", 10))
+        coords_label.place(x=10, y=10)
+
+        # --- LOGAR as Coordenadas no Terminal Principal ---
+        self._log_message("--- DETALHES DE MAPEAMENTO 3D ---")
+        self._log_message(f"Resolução da Tela REAL:\n {screen_width_real}x{screen_height_real} pixels")
+        self._log_message(f"Janela do Mundo (Orthographic):\n X[{x_w_min:.0f}, {x_w_max:.0f}], Y[{y_w_min:.0f}, {y_w_max:.0f}], Z[{z_w_min:.0f}, {z_w_max:.0f}]")
+        self._log_message("--- INÍCIO DOS CÁLCULOS DOS VÉRTICES ---")
+
+        # --- Desenhar o Retângulo VERDE (Canvas OpenGL) na simulação ---
+        scaled_ogl_canvas_x = int(ogl_canvas_x_on_screen * scale_factor)
+        scaled_ogl_canvas_y = int(ogl_canvas_y_on_screen * scale_factor)
+        scaled_canvas_width = int(canvas_width_pixels * scale_factor)
+        scaled_canvas_height = int(canvas_height_pixels * scale_factor)
+
+        pixel_canvas.create_rectangle(scaled_ogl_canvas_x, scaled_ogl_canvas_y,
+                                      scaled_ogl_canvas_x + scaled_canvas_width,
+                                      scaled_ogl_canvas_y + scaled_canvas_height,
+                                      outline="green", width=2) 
+        pixel_canvas.create_text(scaled_ogl_canvas_x + 5, scaled_ogl_canvas_y + 5, anchor="nw",
+                                  text=f"Canvas OpenGL\n({canvas_width_pixels}x{canvas_height_pixels})", 
+                                  fill="darkgreen", font=("Arial", 7))
+
+        log_coords_list = []
+        
+        # --- PREPARAR MATRIZES DE TRANSFORMAÇÃO PARA A SIMULAÇÃO ---
+        proj_matrix = np.array(glGetDoublev(GL_PROJECTION_MATRIX))
+
+        # Matriz ModelView
+        # Inclui as rotações isométricas fixas e a rotação dinâmica da câmera
+        mv_matrix = np.array(glGetDoublev(GL_MODELVIEW_MATRIX))
+
+        # Matriz de rotação em X para compensar a rotação isométrica
+        angle_correct_x = np.radians(35.36)
+        cos_a_x, sin_a_x = np.cos(angle_correct_x), np.sin(angle_correct_x)
+
+        counter_rotation_x_matrix = np.array([
+            [1, 0, 0, 0],
+            [0, cos_a_x, -sin_a_x, 0],
+            [0, sin_a_x, cos_a_x, 0],
+            [0, 0, 0, 1]
+        ], dtype=np.float32)
+
+        # Matriz MVP combinada
+        mvp_matrix = counter_rotation_x_matrix @ mv_matrix
+        #mvp_matrix = counter_rotation_y_matrix @ mvp_matrix
+        mvp_matrix = proj_matrix @ mvp_matrix
+        
+        # Lista para armazenar os pontos 2D projetados para desenhar linhas/polígonos
+        projected_points_2d = []
+
+        # --- Iterar e Desenhar os Pontos (Vértices do Objeto) na simulação ---        
+        for i, point_world in enumerate(self.cube_vertices):
+            # point_world_homogeneous é um array numpy [x, y, z, 1]
+            x_w, y_w, z_w = point_world[0], point_world[1], point_world[2]
+
+            # 1. Aplicar Matriz Modelo-Visualização-Projeção
+            point_clip = mvp_matrix @ point_world
+
+            # 2. Perspectiva (transformar para Normalized Device Coordinates - NDC)
+            ndc_x = point_clip[0] / point_clip[3]
+            ndc_y = point_clip[1] / point_clip[3]
+            ndc_z = point_clip[2] / point_clip[3] # NDC Z é importante para clipping e Z-buffering (embora não usado para desenho 2D aqui)
+
+            # 3. Mapear NDC para Coordenadas de Pixel do Canvas OpenGL (Viewport Transform)
+            # Formula: pixel = (NDC + 1) / 2 * dimension
+            dc_x_canvas = ((ndc_x + 1) / 2) * canvas_width_pixels
+            # Para Y, OpenGL tem Y para cima, Tkinter tem Y para baixo. Invertemos o Y NDC.
+            dc_y_canvas = ((ndc_y + 1) / 2) * canvas_height_pixels 
+
+            # 4. Mapeamento para Pixel da Tela do Dispositivo (absoluto na tela REAL)
+            dc_x_device_real = int(ogl_canvas_x_on_screen + dc_x_canvas)
+            dc_y_device_real = int(ogl_canvas_y_on_screen + dc_y_canvas)
+            
+            # 5. Escalar as Coordenadas do Dispositivo REAL para a Janela de SIMULAÇÃO
+            scaled_dc_x_sim = int(dc_x_device_real * scale_factor)
+            scaled_dc_y_sim = int(dc_y_device_real * scale_factor)
+
+            projected_points_2d.append((scaled_dc_x_sim, scaled_dc_y_sim))
+
+            # --- Desenhar o ponto no canvas simulado ---
+            radius = 1 
+            # Verifica se o ponto projetado está dentro dos limites da janela de simulação
+            if 0 <= scaled_dc_x_sim < sim_window_width and 0 <= scaled_dc_y_sim < sim_window_height:
+                pixel_canvas.create_oval(scaled_dc_x_sim - radius, scaled_dc_y_sim - radius, 
+                                         scaled_dc_x_sim + radius, scaled_dc_y_sim + radius, 
+                                         fill="purple", outline="white", width=1)
+
+            # Logar para o terminal principal
+            self._log_message(f"{i}: Mundo({x_w:.1f},{y_w:.1f},{z_w:.1f}) -> NDC({ndc_x:.2f},{ndc_y:.2f}) ->  DC({dc_x_device_real},{dc_y_device_real})")
+
+        # --- Desenhar as arestas na simulação ---
+        arestas = [
+            (0, 1), (1, 2), (2, 3), (3, 0), # Face frontal
+            (4, 5), (5, 6), (6, 7), (7, 4), # Face traseira
+            (0, 4), (1, 5), (2, 6), (3, 7)  # Conectores
+        ]
+
+        for i, j in arestas:
+            p1_sim = projected_points_2d[i]
+            p2_sim = projected_points_2d[j]
+
+            if p1_sim and p2_sim: # Desenha a linha apenas se ambos os pontos foram projetados
+                pixel_canvas.create_line(p1_sim[0], p1_sim[1], p2_sim[0], p2_sim[1], 
+                                          fill="blue", width=1)
+            else:
+                # Opcional: logar se uma aresta não foi totalmente desenhada
+                pass # self._log_message(f"AVISO: Aresta entre {i} e {j} não desenhada (um ou ambos os pontos fora de visibilidade).")
+
+        self._log_message("--- FIM DOS CÁLCULOS DOS VÉRTICES ---")
+        self._log_message("Simulação Viewport (Coordenadas Dispositivo): Dados no log.")
+
 
 def desenhar(tab4):
     # Frame esquerdo (Interface do usuário)
@@ -516,5 +667,9 @@ def desenhar(tab4):
     # Cria o botão para resetar câmera
     btn_reset_cam = tk.Button(frame_left, text="Resetar câmera", command=lambda: ogl_frame.reset_camera())
     btn_reset_cam.grid(row=12, column=3, pady=3, padx=2) # Posiciona o botão
-    
 
+    # Botão para exibir viewport
+    btn_show_viewport = tk.Button(frame_left, text="Viewport", 
+                                  command=lambda: ogl_frame.exibir_viewport_pixels())
+    btn_show_viewport.grid(row=13, column=0, columnspan=2, pady=5, padx=5, sticky="w")
+    

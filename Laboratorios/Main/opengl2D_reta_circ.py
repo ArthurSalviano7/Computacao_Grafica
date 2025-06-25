@@ -250,7 +250,6 @@ class Reta_circ(OpenGLFrame):
             print(element)
 
 
-
 def desenhar(tab6):
     frame_left = tk.Frame(tab6, width=200, height=600)
     frame_left.configure(background="#000C66")
@@ -316,14 +315,14 @@ def desenhar(tab6):
 
     # Entradas Elipse:
     entry_a = ctk.CTkEntry(frame_left, placeholder_text="a", width=50)
-    entry_a.grid(row=5, column=0, padx=5, pady=20)
+    entry_a.grid(row=6, column=0, padx=5, pady=20)
 
     entry_b = ctk.CTkEntry(frame_left, placeholder_text="b", width=50)
-    entry_b.grid(row=5, column=1, padx=5, pady=20)
+    entry_b.grid(row=6, column=1, padx=5, pady=20)
 
     # Botão para desenhar Elipse ponto médio
     btn_desenhar_elipse = tk.Button(frame_left, text="Elipse P.M.", command=lambda: ogl_frame_reta_circ.elipsePontoMedio(int(entry_a.get()), int(entry_b.get())))
-    btn_desenhar_elipse.grid(row=6, column=0)
+    btn_desenhar_elipse.grid(row=6, column=2)
 
     # Botão para Limpar objetos desenhados
     btn_desenhar_circulo = tk.Button(frame_left, text="Limpar", command=lambda: ogl_frame_reta_circ.limpar())

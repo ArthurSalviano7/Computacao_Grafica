@@ -21,7 +21,7 @@ def apply_composite_matrix(cube_points_list, compose_list, tx, ty, tz, log_callb
     # Adicionar transformacoes do usuario
     full_compose_list.extend(compose_list)
     
-    for transformacao in full_compose_list[1:]:
+    for transformacao in full_compose_list:
         log_callback(f">{transformacao}")
 
     # Se o cubo não estava na origem, adicionar translação de volta no final
@@ -132,7 +132,7 @@ def apply_composite_matrix2D(square_points_list, compose_list, tx, ty, log_callb
     # Adicionar transformacoes do usuario
     full_compose_list.extend(compose_list)
     
-    for transformacao in full_compose_list[1:]:
+    for transformacao in full_compose_list:
         log_callback(f">{transformacao}")
 
     # Se o cubo não estava na origem, adicionar translação de volta no final
