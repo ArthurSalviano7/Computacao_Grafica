@@ -89,7 +89,7 @@ class HeartSimulation(OpenGLFrame):
 
         # Se a simulação estiver em execução, desenha a linha
         if self.is_running:
-            glColor3f(0, 1, 0)  # Verde
+            glColor3f(0, 1, 0)
 
             glBegin(GL_LINE_STRIP)
             for i in range(self.current_index):
@@ -97,21 +97,23 @@ class HeartSimulation(OpenGLFrame):
                 glVertex2f(x, y)  # Adiciona vértice
             glEnd()
 
-            # Avança para o próximo ponto
+             # Avança para o próximo ponto
             self.current_index += 1
 
-            # Condição de parada: tempo esgotado ou fim dos pontos
-            if self.current_index >= len(self.points) or time.time() - self.start_time >= self.display_duration:
-                self.is_running = False
-                self.current_index = 0
-                self.create_points()  # Gera novo conjunto para próxima execução
+        # Se chegou no fim da largura da tela, reinicia o traçado
+        if self.current_index >= len(self.points):
+            self.current_index = 0
+            self.create_points()  # Gera nova linha a partir de x = 0
 
-        # Atualiza a janela OpenGL (double buffering)
+        # Verifica se o tempo acabou
+        if time.time() - self.start_time >= self.display_duration:
+            self.is_running = False
+
         self.tkSwapBuffers()
 
-        # Se ainda estiver rodando, agenda o próximo frame
         if self.is_running:
-            self.after(33, self.redraw)  # ~30 FPS
+            self.after(33, self.redraw) # ~ 30 FPS
+
 
     def redraw(self):
         self.draw_scene() # Redesenha a cena
