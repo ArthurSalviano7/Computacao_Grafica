@@ -141,6 +141,7 @@ class Reta_circ(OpenGLFrame):
 
         return ((x, y))   
 
+    # Simetria dos pontos nos 8 oitantes
     def pontoCirculo(self, x, y):
         self.pontos.append((x, y))
         self.pontos.append((y, x))
@@ -152,54 +153,100 @@ class Reta_circ(OpenGLFrame):
         self.pontos.append((-x, y))
     
     def circPontoMedio(self, raio):
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) # Quando desenhar novo círculo, limpa a tela antes
-        points = []
+        # Limpa os buffers de cor e profundidade para preparar o novo desenho
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    
+        points = []  # Lista que armazenará os pontos calculados do círculo
+
+        # Inicializa as coordenadas do primeiro ponto no eixo Y
         x = 0
         y = raio
+
+        # Define o valor inicial da decisão, com base na equação do ponto médio
+        # A fórmula é d = 1 - raio, mas o arredondamento com 5/4 melhora a precisão para inteiros
         d = round(5/4 - raio)
 
+        # Adiciona o primeiro ponto e seus simétricos (usando simetria octal)
         points.append((round(x), round(y)))
-        self.pontoCirculo(round(x), round(y))
-        
-        while(y > x):
-            if(d < 0):
+        self.pontoCirculo(round(x), round(y))  # Desenha os 8 pontos simétricos a partir desse
+
+        # Enquanto y > x (só desenha 1/8 do círculo, os outros 7/8 são por simetria)
+        while y > x:
+            if d < 0:
+                # Próximo ponto está dentro do círculo, então só incrementa x
                 d += 2 * x + 3
             else:
+                # Próximo ponto está fora ou na borda, decrementa y e incrementa x
                 d += 2 * (x - y) + 5
                 y -= 1
             x += 1
+
+            # Armazena e desenha o novo ponto calculado com simetria
             points.append((round(x), round(y)))
             self.pontoCirculo(round(x), round(y))
-        
-        self.redraw()  # Desenha a cena com o novo círculo (atualização)
-        
-        return points
+
+        # Atualiza a cena para mostrar o círculo completo
+        self.redraw()
+
+        return points  # Retorna os pontos usados no desenho
+
     
     def circEquacaoExplicita(self, raio):
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) # Quando desenhar novo círculo, limpa a tela antes
+        # Limpa a tela antes de desenhar o novo círculo
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
         '''
-        Usa a equação do círculo y = sqrt(raio**2 - x**2)
+        A equação do círculo centrado na origem é: x² + y² = r²
+        Despejando y: y = sqrt(r² - x²)
+        Este algoritmo percorre valores de x de -raio até +raio
+        e calcula o valor correspondente de y para desenhar os pontos do arco superior do círculo.
         '''
-        x = -raio
+        x = -raio  # Começa no extremo esquerdo do círculo
+
         while x <= raio:
+            # Calcula o y correspondente usando a equação do círculo
             y = math.sqrt(raio**2 - x**2)
+
+            # Desenha o ponto (x, y) e seus simétricos (via método pontoCirculo)
             self.pontoCirculo(int(x), int(y))
-            x += 1 # Precisão do desenho
-        
-        self.redraw()  # Desenha a cena com o novo círculo
 
-    def circTrigonometrico(self, raio):
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) # Quando desenhar novo círculo, limpa a tela antes
+            # Avança no eixo x. Como estamos trabalhando com inteiros,
+            # a precisão depende de quão pequenos são os passos (1, 0.5, etc.)
+            x += 1
 
-        num_pontos = 1000  # Número de pontos para desenhar o círculo
-        for i in range(num_pontos):
-            theta = 2.0 * math.pi * i / num_pontos
-            x = raio * math.cos(theta)
-            y = raio * math.sin(theta)
-            self.pontos.append((round(x), round(y)))
+        # Atualiza a cena para exibir o círculo completo
+        self.redraw()
+
+
+    def circTrigonometrico(self, raio, h=0, k=0, passo=0.01):
+        # Passo 1: Inicializa a tela e os parâmetros
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         
-        self.redraw() 
+        theta = 0.0  # Início do ângulo
+        self.pontos.clear()  # Limpa lista anterior, se houver
+
+        # Passo 2: Testa se já percorreu toda a circunferência
+        while theta < 2 * math.pi:
+            # Passo 3: Calcula coordenadas x e y
+            x = round(raio * math.cos(theta))
+            y = round(raio * math.sin(theta))
+
+            # Passo 4: Adiciona os 8 pontos simétricos ao redor do centro (h, k)
+            self.pontos.append((h + x, k + y))
+            self.pontos.append((h + y, k + x))
+            self.pontos.append((h - y, k + x))
+            self.pontos.append((h - x, k + y))
+            self.pontos.append((h - x, k - y))
+            self.pontos.append((h - y, k - x))
+            self.pontos.append((h + y, k - x))
+            self.pontos.append((h + x, k - y))
+
+            # Passo 5: Incrementa o ângulo
+            theta += passo
+
+        # Passo 6: Atualiza a tela
+        self.redraw()
+
 
     def pontoElipse(self, x, y):
         self.pontos.append((x, y))
@@ -209,41 +256,53 @@ class Reta_circ(OpenGLFrame):
 
     '''Método para desenhar elipse pelo Algoritmo do Ponto-Medio para conversão matricial de elipses'''
     def elipsePontoMedio(self, a, b):
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) # Quando desenhar nova elipse, limpa a tela antes
+        # Limpa a tela antes de desenhar a nova elipse
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
+        # Começa do ponto mais alto da elipse (x = 0, y = b)
         x = 0
         y = b
+
+        # Calcula o valor inicial da decisão para a Região 1
         d1 = b * b - a * a * b + a * a / 4.0
 
+        # Desenha o ponto inicial e seus simétricos (provavelmente com simetria quádrupla)
         self.pontoElipse(x, y)
-        
+
+        # Região 1: enquanto a inclinação da tangente é < -1 (ou seja, dy/dx > 1)
+        # Isso acontece quando (a²)(y - 0.5) > (b²)(x + 1)
         while((a * a * (y - 0.5)) > (b * b * (x + 1))):
-            # Região 1
             if d1 < 0:
+                # Ponto dentro da elipse — só avança no eixo x
                 d1 = d1 + b * b * (2 * x + 3)
                 x += 1
             else:
+                # Ponto fora da elipse — avança em x e recua em y
                 d1 = d1 + b * b * (2 * x + 3) + a * a * (-2 * y + 2)
                 x += 1
                 y -= 1
-            
+        
             self.pontoElipse(x, y)
 
+        # Região 2: a inclinação da tangente é >= -1 (ou seja, dy/dx <= 1)
+        # Calcula valor inicial da decisão para Região 2
+        d2 = b * b * (x + 0.5)**2 + a * a * (y - 1)**2 - a * a * b * b
 
-        # Região 2
-        d2 = b * b * (x + 0.5) * (x + 0.5) + a * a * (y - 1) * (y - 1) - a * a * b * b
         while y > 0:
             if d2 < 0:
+                # Ponto dentro — avança x e reduz y
                 d2 = d2 + b * b * (2 * x + 2) + a * a * (-2 * y + 3)
                 x += 1
                 y -= 1
             else:
+                # Ponto fora — reduz apenas y
                 d2 = d2 + a * a * (-2 * y + 3)
                 y -= 1
-            
+        
             self.pontoElipse(x, y)
-  
-        self.redraw()  # Desenha a cena com a nova elipse
+
+        # Atualiza a cena com a elipse desenhada
+        self.redraw()
 
     def printPontos(self, points):
         for element in points:
