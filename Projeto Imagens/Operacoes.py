@@ -78,41 +78,27 @@ def operacoes_logicas(imagem1, imagem2):
     imagem1_array = np.array(imagem1)
     imagem2_array = np.array(imagem2)
 
-    soma1 = np.sum(imagem1_array)
-    soma2 = np.sum(imagem2_array)
-
-    # Calcular a média de cada imagem
-    media1 = soma1 / (imagem1_array.shape[0] * imagem1_array.shape[1])
-    media2 = soma2 / (imagem2_array.shape[0] * imagem2_array.shape[1])
-
-    # Binarizar com base na própria média
-    imagem1_bin = (imagem1_array > media1).astype(np.uint8) * 255
-    imagem2_bin = (imagem2_array > media2).astype(np.uint8) * 255
-
-    altura, largura = imagem1_bin.shape
+    altura, largura = imagem1_array.shape
     and_result = np.zeros((altura, largura), dtype=np.uint8)
     or_result  = np.zeros((altura, largura), dtype=np.uint8)
     xor_result = np.zeros((altura, largura), dtype=np.uint8)
 
-        # Loop pixel a pixel
     for y in range(altura):
         for x in range(largura):
-            p1 = 1 if imagem1_bin[y][x] > 0 else 0
-            p2 = 1 if imagem2_bin[y][x] > 0 else 0
+            p1 = imagem1_array[y][x]
+            p2 = imagem2_array[y][x]
 
-            and_result[y][x] = (p1 & p2) * 255
-            or_result[y][x]  = (p1 | p2) * 255
-            xor_result[y][x] = (p1 ^ p2) * 255
+    
+            and_result[y][x] = p1 & p2
+            or_result[y][x]  = p1 | p2
+            xor_result[y][x] = p1 ^ p2
 
     # Converte para imagens PIL
-    #bin_img1 = Image.fromarray(imagem1_bin)
-    #bin_img2 = Image.fromarray(imagem2_bin)
     and_img = Image.fromarray(and_result)
     or_img = Image.fromarray(or_result)
     xor_img = Image.fromarray(xor_result)
 
     return and_img, or_img, xor_img
-
 
 
 

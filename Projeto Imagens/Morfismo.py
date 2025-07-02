@@ -284,6 +284,6 @@ def mostrar_tela(tab4):
 
     # Chama a função para criar morfismo
     # Pode desativar após criar imagens
-    create_morphing(img_start, img_final, t_values=t)
+    #create_morphing(img_start, img_final, t_values=t)
 
     mostrar_tela_morfismo_viewer(tab4)

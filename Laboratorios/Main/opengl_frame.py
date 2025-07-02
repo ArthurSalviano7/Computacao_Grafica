@@ -478,7 +478,7 @@ class AppOgl(OpenGLFrame):
             scaled_dc_y_sim = int(dc_y_device_real * scale_factor)
 
             # --- Desenhar o ponto no canvas simulado ---
-            radius = 3 # Raio menor para pontos
+            radius = 1 # Raio menor para pontos
             if 0 <= scaled_dc_x_sim < sim_window_width and 0 <= scaled_dc_y_sim < sim_window_height:
                 pixel_canvas.create_oval(scaled_dc_x_sim - radius, scaled_dc_y_sim - radius, 
                                         scaled_dc_x_sim + radius, scaled_dc_y_sim + radius, 
